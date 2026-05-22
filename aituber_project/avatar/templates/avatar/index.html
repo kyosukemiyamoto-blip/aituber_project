@@ -1,0 +1,49 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" href="{% static 'avatar/images/normal.png' %}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{% static 'avatar/css/style.css' %}">
+    <script src="{% static 'avatar/js/app.js' %}" defer></script>
+</head>
+<body>
+    <div class="comment">
+        <div class="comment_header">
+            <h2>Live Comments</h2>
+            <span class="live_badge">LIVE</span>
+        </div>
+
+        <div class="comment_list" id="commentList">
+            <!-- ここに自動でコメントが追加される -->
+        </div>
+    </div>
+    <div class="cat">
+        <div class="catAvatar">
+            <img id="catAvatar" class="cat_avatar" src="{% static 'avatar/images/normal.png' %}" alt="cat">
+        </div>
+        <div class="controls">
+            <button id="generateSuperChatBtn">スーパーチャット生成</button>
+            <button id="generateCommentBtn">コメント生成</button>
+            <button id="generateSelfIntroductionBtn">自己紹介生成</button>
+            <button id="generateNewsTalkBtn">ニューストーク生成</button>
+            <button id="generateWeatherTalkBtn">ウェザートーク生成</button>
+        </div>
+    </div>
+    <div class="bottom">
+        <div class="bottom_left">
+            <div class="event_queue" id="eventQueue"></div>
+        </div>
+
+        <div class="bottom_right">
+            <div class="user_input">
+                <input id="usernameInput" placeholder="username">
+                <input id="messageInput" placeholder="comment">
+                <button id="sendUserCommentBtn">送信</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

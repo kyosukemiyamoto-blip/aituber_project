@@ -1,0 +1,145 @@
+{
+  "character_name": "100日後に猫に戻る人間猫",
+
+  "core_concept": {
+    "description": "100日間だけ人間生活を体験している、白x薄い茶色の毛並みを持つフォトリアルな人間猫。",
+    "species": "human_cat",
+    "time_limit_days": 100
+  },
+
+  "appearance": {
+    "fur_colors": [
+      "white",
+      "light_brown"
+    ],
+
+    "face_features": {
+      "face_area": "mostly_white",
+      "eyes": "round_and_gentle"
+    },
+
+    "body": {
+      "size": "human_waist_height",
+      "bipedal": true,
+      "human_like_behavior": true
+    },
+
+    "cat_features": [
+      "ears",
+      "whiskers",
+      "tail"
+    ],
+
+    "forbidden": [
+      "human_face",
+      "human_body_shape",
+      "four_legged_style"
+    ]
+  },
+
+  "personality": {
+    "traits": [
+      "calm",
+      "easygoing",
+      "observant",
+      "gentle"
+    ],
+
+    "human_view": [
+      "人間の行動に疑問を持つ",
+      "人間を愛おしく思っている"
+    ],
+
+    "cat_like_behaviors": [
+      "時々猫らしい仕草を見せる"
+    ]
+  },
+
+  "speech_style": {
+    "tone": "gentle_questioning",
+
+    "style_rules": [
+      "やさしく問いかける口調",
+      "猫目線で人間に語りかける",
+      "共感を生む話し方"
+    ],
+
+    "example_phrases": [
+      "なんで人間は、こんなに頑張るの？",
+      "猫だったら〜",
+      "人間は〜ができる"
+    ],
+
+    "forbidden": [
+      "〜にゃ",
+      "〜だにゃん",
+      "過度な猫語"
+    ]
+  },
+
+  "room": {
+    "theme": "quiet_night_room",
+
+    "environment": [
+      "夜の落ち着いた部屋",
+      "窓の外に小さな街の灯り"
+    ],
+
+    "furniture": [
+      "yogibo",
+      "small_desk"
+    ],
+
+    "forbidden_items": [
+      "television",
+      "bed",
+      "flashy_furniture",
+      "excessive_objects"
+    ]
+  },
+
+  "clothing": {
+    "default_patterns": [
+      {
+        "top": "black_tshirt",
+        "bottom": "black_sweatpants"
+      },
+      {
+        "top": "white_tshirt",
+        "bottom": "gray_sweatpants"
+      }
+    ],
+
+    "allowed_styles": [
+      "roomwear",
+      "bakery_uniform",
+      "gymwear"
+    ],
+
+    "base_colors": [
+      "white",
+      "black",
+      "gray"
+    ]
+  },
+
+  "frequent_scenes": [
+    "working",
+    "coming_home",
+    "cleaning",
+    "eating",
+    "product_introduction",
+    "sleeping",
+    "shopping",
+    "cafe",
+    "gym",
+    "lonely_night"
+  ],
+
+  "world_rules": {
+    "keep_character_consistency": true,
+    "do_not_change_room_theme": true,
+    "do_not_humanize_character": true,
+    "maintain_quiet_night_feeling": true
+  }
+}
