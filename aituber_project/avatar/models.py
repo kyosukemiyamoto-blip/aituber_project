@@ -20,7 +20,7 @@ class ShortTermMemory(models.Model):
     
 
 class LongTermMemory(models.Model):
- # 事実（例: 夜型） #好み(例: 海が好き） #感情傾向  #スキル・能力   #重要な出来事
+# 事実（例: 夜型） #好み(例: 海が好き） #感情傾向  #スキル・能力  #重要な出来事
     MEMORY_TYPES = [
         ("fact", "Fact"),
         ("preference", "Preference"),
