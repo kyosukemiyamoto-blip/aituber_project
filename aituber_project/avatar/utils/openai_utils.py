@@ -25,6 +25,7 @@ def safe_json_parse(raw_text: str, fallback: dict):
         print("JSON parse error:")
         print(raw_text)
         return fallback
+    
 #------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -118,7 +119,7 @@ def generate_news_talk(instruction:str,prompt_input:str) -> dict:
 #------------------------------------------------------------------------------------------------------------------------------------
 
 
-def generate_weather_talk(instruction:str,prompt_input:str):
+def generate_weather_talk(instruction:str, prompt_input:str):
 
     response = client.responses.create(model=API_MODEL, instructions=instruction, input=prompt_input)
 
@@ -133,3 +134,32 @@ def generate_weather_talk(instruction:str,prompt_input:str):
         "script": data.get("script", ""),
         "emotion": "normal"
     }
+
+
+def generate_LongTermMemory(instruction:str,prompt_input:str):
+    response = client.responses.create(model=API_MODEL, instructions=instruction, input=prompt_input)
+
+    data = safe_json_parse(
+        response.output_text.strip(),
+        {
+            "memory_type":"",
+            "content":"",
+            "importance":0.5,
+        }
+    )
+
+    return {
+        "memory_type": data.get("memory_type",""),
+        "content": data.get("content",""),
+        "importance": data.get("importance",0.5)
+    }
+
+# Object example :
+# {
+#   "user": "kyosuke",
+#   "memory_type": "preference",
+#   "content": "ユーザーはC言語やアセンブリに興味がある",
+#   "importance": 0.7,
+#   "source_messages": [2],
+#   "created_at": "2026-05-26T00:10:02Z"
+# }

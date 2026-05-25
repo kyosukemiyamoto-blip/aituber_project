@@ -30,23 +30,25 @@ class LongTermMemory(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="long_term_memories")
-
     memory_type = models.CharField(max_length=50, choices=MEMORY_TYPES)
-
-    content = models.TextField()
-    # 例: "ユーザーは低レイヤー技術に興味がある"
-
-    importance = models.FloatField(default=0.5)
-    # 0.0 ~ 1.0（どれくらい重要か）
-
-    source_messages = models.ManyToManyField(
+    content = models.TextField()                    # 例: "ユーザーは低レイヤー技術に興味がある"
+    importance = models.FloatField(default=0.5)     # 0.0 ~ 1.0（どれくらい重要か）
+    source_messages = models.ManyToManyField(       # どの会話から生成されたか接続
         ShortTermMemory,
         blank=True,
         related_name="derived_memories"
     )
-    # どの会話から生成されたか
-
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.user.username}: {self.memory_type}"
+    
+# Object example :
+# {
+#   "user": "kyosuke",
+#   "memory_type": "preference",
+#   "content": "ユーザーはC言語やアセンブリに興味がある",
+#   "importance": 0.7,
+#   "source_messages": [2],
+#   "created_at": "2026-05-26T00:10:02Z"
+# }

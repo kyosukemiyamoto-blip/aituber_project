@@ -33,3 +33,9 @@ def build_character_reply_input(username: str,user_message: str, history_instruc
 """
 #-----------------------------------------------------------------------------------------------------------------#
 #-----------------------------------------------------------------------------------------------------------------#
+
+def build_LongTermMemory_input(comment: str, reply: str) -> str:
+    return f"""
+user: {comment}
+assistant: {reply}
+"""

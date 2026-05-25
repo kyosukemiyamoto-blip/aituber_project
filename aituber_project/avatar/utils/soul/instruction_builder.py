@@ -151,3 +151,61 @@ def generate_weather_talk_instruction() -> str:
   "script": "明日の東京は雨みたい。人間は濡れるのを嫌がるけれど、お部屋でゆっくり回復する日にするのもいいよね。"
 }}
 """
+
+def generate_LongTermMemory_instruction(comment: str, reply: str) -> str:
+    return f"""
+あなたはユーザーの長期記憶を生成するAIです。
+
+以下の会話から、ユーザーに関する「長期的に意味のある情報」だけを抽出してください。
+
+---
+
+【会話】
+user: {comment}
+assistant: {reply}
+
+---
+
+【出力ルール（厳守）】
+- 出力は必ずJSONのみ(説明禁止)
+- 次の3キーのみを使用すること:
+
+{{
+  "memory_type": "...",
+  "content": "...",
+  "importance": 0.0-1.0の数値
+}}
+
+---
+
+【memory_typeの定義】
+- fact: ユーザーの客観的事実（例: 夜型、学生）
+- preference: 好み・嗜好（例: 海が好き）
+- emotion: 感情傾向（例: 不安になりやすい）
+- skill: 技術・能力（例: Pythonが得意)
+- event: 重要な出来事（例: HTBをクリアした)
+
+---
+
+【importanceの基準】
+- 0.9〜1.0: 人格レベルで重要な特徴
+- 0.6〜0.8: 継続的に影響する情報
+- 0.3〜0.5: 一時的・軽い情報
+- 0.1〜0.2: ほぼ不要
+
+---
+
+【重要ルール】
+- 推測しすぎない（会話にない情報は禁止）
+- 1つの会話から最大1つの記憶のみ出力
+"""
+
+# Object example :
+# {
+#   "user": "kyosuke",
+#   "memory_type": "preference",
+#   "content": "ユーザーはC言語やアセンブリに興味がある",
+#   "importance": 0.7,
+#   "source_messages": [2],
+#   "created_at": "2026-05-26T00:10:02Z"
+# }

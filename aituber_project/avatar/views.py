@@ -2,33 +2,38 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
+import threading
 from .utils.openai_utils import (
     generate_comment, 
     generate_character_reply, 
     generate_self_introduction, 
     generate_news_talk, 
-    generate_weather_talk)
+    generate_weather_talk,
+    generate_LongTermMemory)
 from .utils.azure_utils import speak
 from .utils.store import (
     add_comment,
     add_reply,
     get_latest_comment,
-    add_user_history,
-    get_user_history,
-)
+    add_ShortTermMemory,
+    get_ShortTermMemory,
+    add_LongTermMemory,
+    get_LongTermMemory)
 from .utils.soul.history_builder import format_history
 from .utils.soul.instruction_builder import (
     generate_comment_instruction,
     generate_character_reply_instruction,
     generate_self_instroduction_instruction,
     generate_news_talk_instruction,
-    generate_weather_talk_instruction)
+    generate_weather_talk_instruction,
+    generate_LongTermMemory_instruction)
 from .utils.soul.input_builder import (
     build_generate_comment_input,
     build_generate_self_instruction_input,
     build_generate_news_talk_input,
     build_generate_weather_talk_input,
-    build_character_reply_input)
+    build_character_reply_input,
+    build_LongTermMemory_input)
 
 
 def index(request):
@@ -65,7 +70,7 @@ def reply_to_comment_api(request):
     username = latest_comment["username"]
     user_message = latest_comment["text"]
 
-    history = get_user_history(username)
+    history = get_ShortTermMemory(username)
     formatted_history = format_history(history,username)
 
     instruction = generate_character_reply_instruction()
@@ -75,7 +80,7 @@ def reply_to_comment_api(request):
     script = ai_output["script"]
     emotion = ai_output["emotion"]
 
-    add_user_history(username, user_message, script)
+    add_ShortTermMemory(username, user_message, script)
 
     reply_data = {
         "target_comment": latest_comment,
@@ -149,7 +154,7 @@ def user_comment_api(request):
         return JsonResponse({"error": "invalid input"}, status=400)
 
 
-    history = get_user_history(username)
+    history = get_ShortTermMemory(username)
     formatted_history = format_history(history,username)
 
     instruction = generate_character_reply_instruction()
@@ -158,9 +163,20 @@ def user_comment_api(request):
     script = ai_output["script"]
     emotion = ai_output["emotion"]
 
-    add_user_history(username, user_message, script)
-
-    speak(script)
+    stm_source = add_ShortTermMemory(username, user_message, script)
+    
+    threading.Thread(target=speak, args=(script,)).start()
+    
+    # Creating LongTermMemory object
+    ltm_instruction = generate_LongTermMemory_instruction(user_message, script)
+    ltm_input = build_LongTermMemory_input(user_message, script)
+    ltm_data = generate_LongTermMemory(ltm_instruction, ltm_input)
+    if float(ltm_data.get("importance", 0)) >= 0.3:
+        memory_type = ltm_data.get("memory_type", "")
+        content = ltm_data.get("content", "")
+        importance = float(ltm_data.get("importance", 0.5))
+        source_messages = stm_source
+        add_LongTermMemory(username, memory_type, content, importance, source_messages)
 
     return JsonResponse({
         "reply": {

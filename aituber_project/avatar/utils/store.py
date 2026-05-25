@@ -2,16 +2,45 @@ comments = []
 replies = []
 from avatar.models import (
     User,
-    ShortTermMemory
+    ShortTermMemory,
+    LongTermMemory
 )
-def add_user_history(username: str, comment: str, reply: str):
+
+def add_LongTermMemory(username: str, memory_type: str, content: str, importance: float, source_messages=None):
     user, created = User.objects.get_or_create(username=username)
-    ShortTermMemory.objects.create(user=user,role="user",content=comment)
-    ShortTermMemory.objects.create(user=user,role="assistant",content=reply)
+    ltm = LongTermMemory.objects.create(user=user, memory_type=memory_type, content=content, importance=importance)
+    if source_messages:
+        ltm.source_messages.set(source_messages)
+
+    return ltm
 
 
+def add_ShortTermMemory(username: str, comment: str, reply: str):
+    user, created = User.objects.get_or_create(username=username)
+    user_msg = ShortTermMemory.objects.create(user=user,role="user",content=comment)
+    assistant_reply = ShortTermMemory.objects.create(user=user,role="assistant",content=reply)
+    
+    return user_msg, assistant_reply
 
-def get_user_history(username: str):
+def get_LongTermMemory(username: str):
+    try:
+        user = User.objects.get(username=username)
+    except:
+        return []
+
+    memories = LongTermMemory.objects.filter(user=user).order_by("-importance", "-created_at")
+
+    return [
+        {
+            "memory_type": m.memory_type,
+            "content": m.content,
+            "importance": m.importance,
+        }
+        for m in memories
+    ]
+
+
+def get_ShortTermMemory(username: str):
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
