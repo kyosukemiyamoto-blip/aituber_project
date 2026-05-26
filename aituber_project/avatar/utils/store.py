@@ -8,9 +8,10 @@ from avatar.models import (
 
 def add_LongTermMemory(username: str, memory_type: str, content: str, importance: float, source_messages=None):
     user, created = User.objects.get_or_create(username=username)
-    ltm = LongTermMemory.objects.create(user=user, memory_type=memory_type, content=content, importance=importance)
+    ltm = LongTermMemory.objects.create(user=user,memory_type=memory_type,content=content,importance=importance)
+
     if source_messages:
-        ltm.source_messages.set(source_messages)
+        ltm.source_messages.add(*source_messages)
 
     return ltm
 
@@ -46,7 +47,7 @@ def get_ShortTermMemory(username: str):
     except User.DoesNotExist:
         return []
 
-    messages = (ShortTermMemory.objects.filter(user=user).order_by("-created_at")[:20])
+    messages = (ShortTermMemory.objects.filter(user=user).order_by("-created_at")[:10])
     messages = reversed(messages)
 
     return [{"role": message.role, "content": message.content} for message in messages]

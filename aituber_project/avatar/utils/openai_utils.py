@@ -135,6 +135,7 @@ def generate_weather_talk(instruction:str, prompt_input:str):
         "emotion": "normal"
     }
 
+#------------------------------------------------------------------------------------------------------------------------------------
 
 def generate_LongTermMemory(instruction:str,prompt_input:str):
     response = client.responses.create(model=API_MODEL, instructions=instruction, input=prompt_input)
@@ -144,14 +145,23 @@ def generate_LongTermMemory(instruction:str,prompt_input:str):
         {
             "memory_type":"",
             "content":"",
-            "importance":0.5,
+            "importance":0.0,
         }
     )
 
+    memory_type = data.get("memory_type", "none")
+    content = data.get("content", "")
+    importance = data.get("importance", 0.0)
+
+    try:
+        importance = float(importance)
+    except (TypeError, ValueError):
+        importance = 0.0
+
     return {
-        "memory_type": data.get("memory_type",""),
-        "content": data.get("content",""),
-        "importance": data.get("importance",0.5)
+        "memory_type": memory_type,
+        "content": content,
+        "importance": importance
     }
 
 # Object example :

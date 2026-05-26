@@ -163,19 +163,30 @@ def user_comment_api(request):
     script = ai_output["script"]
     emotion = ai_output["emotion"]
 
-    stm_source = add_ShortTermMemory(username, user_message, script)
-    
+    user_msg, assistant_msg = add_ShortTermMemory(username, user_message, script)
+    source_messages = [user_msg]    
     threading.Thread(target=speak, args=(script,)).start()
     
-    # Creating LongTermMemory object
-    ltm_instruction = generate_LongTermMemory_instruction(user_message, script)
-    ltm_input = build_LongTermMemory_input(user_message, script)
+    ltm_instruction = generate_LongTermMemory_instruction()
+    ltm_input = build_LongTermMemory_input(user_message)
     ltm_data = generate_LongTermMemory(ltm_instruction, ltm_input)
-    if float(ltm_data.get("importance", 0)) >= 0.3:
-        memory_type = ltm_data.get("memory_type", "")
-        content = ltm_data.get("content", "")
-        importance = float(ltm_data.get("importance", 0.5))
-        source_messages = stm_source
+
+    VALID_MEMORY_TYPES = {
+        "fact",
+        "preference",
+        "emotion",
+        "skill",
+        "event",
+    }
+
+    memory_type = ltm_data.get("memory_type", "none")
+    content = ltm_data.get("content", "").strip()
+    try:
+        importance = float(ltm_data.get("importance", 0.0))
+    except (TypeError, ValueError):
+        importance = 0.0
+
+    if (memory_type in VALID_MEMORY_TYPES and content != "" and importance >= 0.6):
         add_LongTermMemory(username, memory_type, content, importance, source_messages)
 
     return JsonResponse({

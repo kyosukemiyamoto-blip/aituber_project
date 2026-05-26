@@ -21,21 +21,28 @@ def build_generate_weather_talk_input() -> str:
     return "設定を考慮しながら、50文字以上、200文字以内で日本のランダムな都市の天気予報を教えてください。文字数が足りない場合、その都市の豆知識も話してください。"
 #-----------------------------------------------------------------------------------------------------------------#
 #-----------------------------------------------------------------------------------------------------------------#
-def build_character_reply_input(username: str,user_message: str, history_instruction: str) -> str:
+def build_character_reply_input(username: str, user_message: str, history_instruction: str) -> str:
     return f"""
-返信相手のユーザー名: {username}
+【返信相手】
+{username}
 
-返信するコメント:
+【最新コメント】
 {user_message}
 
-履歴:
+【短期記憶・直近履歴】
 {history_instruction}
+
+【返信方針】
+- 最新コメントへの返答を最優先してください。
+- 直近履歴と関連がある場合だけ、自然に文脈を引き継いでください。
+- 履歴を無理に要約しないでください。
+- ユーザーが話題を変えた場合は、新しい話題に合わせてください。
 """
 #-----------------------------------------------------------------------------------------------------------------#
 #-----------------------------------------------------------------------------------------------------------------#
 
-def build_LongTermMemory_input(comment: str, reply: str) -> str:
+def build_LongTermMemory_input(comment: str) -> str:
     return f"""
-user: {comment}
-assistant: {reply}
+【ユーザー発言】
+{comment}
 """
