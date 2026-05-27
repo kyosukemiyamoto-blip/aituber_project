@@ -1,4 +1,4 @@
-def format_history(history, username):
+def format_short_term_memory(history, username):
     if not history:
         return f"""
 ユーザー「{username}」がコメントしたのは初めてです。
@@ -27,5 +27,37 @@ def format_history(history, username):
 - ユーザーの過去発言は、今回の返信に必要な場合だけ参考にしてください。
 - 人間猫の過去発言は、会話の流れを理解するためだけに使ってください。
 - 人間猫の過去発言を、ユーザー本人の情報として扱ってはいけません。
+- 最新コメントへの返信を最優先してください。
+"""
+
+
+def format_long_term_memory(memories, username):
+    if not memories:
+        return f"""
+ユーザー「{username}」に関する長期記憶はまだありません。
+"""
+
+    formatted_memory = ""
+
+    for memory in memories:
+        memory_type = memory["memory_type"]
+        content = memory["content"]
+        importance = memory["importance"]
+
+        formatted_memory += (
+            f"- 種類: {memory_type}\n"
+            f"  内容: {content}\n"
+            f"  重要度: {importance}\n"
+        )
+
+    return f"""
+【ユーザー「{username}」に関する長期記憶】
+{formatted_memory}
+
+【長期記憶の扱い】
+- これはユーザー本人に関する継続的な情報です。
+- 最新コメントに関係する場合だけ自然に参考にしてください。
+- 無理に長期記憶の内容を説明しないでください。
+- 「覚えているよ」を毎回使わないでください。
 - 最新コメントへの返信を最優先してください。
 """

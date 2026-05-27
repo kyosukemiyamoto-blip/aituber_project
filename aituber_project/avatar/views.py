@@ -10,6 +10,7 @@ from .utils.openai_utils import (
     generate_news_talk, 
     generate_weather_talk,
     generate_LongTermMemory)
+#from .utils.elevenLabs_utils import speak
 from .utils.azure_utils import speak
 from .utils.store import (
     add_comment,
@@ -19,7 +20,9 @@ from .utils.store import (
     get_ShortTermMemory,
     add_LongTermMemory,
     get_LongTermMemory)
-from .utils.soul.history_builder import format_history
+from .utils.soul.history_builder import (
+    format_short_term_memory,
+    format_long_term_memory)
 from .utils.soul.instruction_builder import (
     generate_comment_instruction,
     generate_character_reply_instruction,
@@ -71,7 +74,7 @@ def reply_to_comment_api(request):
     user_message = latest_comment["text"]
 
     history = get_ShortTermMemory(username)
-    formatted_history = format_history(history,username)
+    formatted_history = format_short_term_memory(history,username)
 
     instruction = generate_character_reply_instruction()
     prompt_input = build_character_reply_input(username, user_message, formatted_history)
@@ -154,11 +157,14 @@ def user_comment_api(request):
         return JsonResponse({"error": "invalid input"}, status=400)
 
 
-    history = get_ShortTermMemory(username)
-    formatted_history = format_history(history,username)
+    short_term_memory = get_ShortTermMemory(username)
+    formatted_short_term_memory = format_short_term_memory(short_term_memory,username)
+
+    long_term_memory = get_LongTermMemory(username)
+    formatted_long_term_memory = format_long_term_memory(long_term_memory, username)
 
     instruction = generate_character_reply_instruction()
-    prompt_input = build_character_reply_input(username, user_message, formatted_history)
+    prompt_input = build_character_reply_input(username, user_message, formatted_short_term_memory, formatted_long_term_memory)
     ai_output = generate_character_reply(instruction,prompt_input)
     script = ai_output["script"]
     emotion = ai_output["emotion"]
