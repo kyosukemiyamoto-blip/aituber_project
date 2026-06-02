@@ -9,4 +9,5 @@ urlpatterns = [
     path("api/news-talk/",views.news_talk_api,name= "news_talk_api"),
     path("api/weather-talk/",views.weather_talk_api,name= "weather_talk_api"),
     path("api/user-comment/", views.user_comment_api, name="user_comment_api"),
+    path("api/delete-voice/", views.delete_voice_api, name="delete_voice_api"),
 ]
