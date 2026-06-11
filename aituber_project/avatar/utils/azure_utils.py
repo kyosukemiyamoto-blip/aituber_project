@@ -1,5 +1,3 @@
-# avatar/utils/azure_utils.py
-
 import os
 import uuid
 import html
@@ -11,10 +9,6 @@ AZURE_SPEECH_REGION = "japaneast"
 
 
 def synthesize_for_vtube(text: str) -> dict:
-    """
-    Azure TTSで音声ファイルを生成し、
-    VTube Studio用のlip_syncデータを返す。
-    """
     if not AZURE_SPEECH_KEY:
         raise RuntimeError("環境変数 'AZURE_API_KEY' が設定されていません。")
 
@@ -88,23 +82,11 @@ def synthesize_for_vtube(text: str) -> dict:
 
 
 def convert_visemes_to_lip_sync(viseme_events: list[dict]) -> list[dict]:
-    """
-    Azure viseme_id を VTube Studio 用の
-    { mouth, duration } 形式に変換する。
-
-    mouth:
-        0.0 = 閉じる
-        1.0 = 最大に開く
-    """
     if not viseme_events:
         return []
 
-    # Azure viseme_id -> MouthOpen 値
-    # まずは動きすぎない控えめ設定。
-    # ここを調整すると口の開き具合を直接変えられる。
     viseme_to_mouth = {
-        0: 0.00,  # silence
-
+        0: 0.00,
         1: 0.25,
         2: 0.45,
         3: 0.35,
@@ -153,10 +135,6 @@ def convert_visemes_to_lip_sync(viseme_events: list[dict]) -> list[dict]:
 
 
 def smooth_lip_sync(lip_sync: list[dict]) -> list[dict]:
-    """
-    口の開閉がガクガクしすぎるのを防ぐため、
-    前後のmouth値を少しならす。
-    """
     if len(lip_sync) < 3:
         return lip_sync
 
@@ -171,11 +149,7 @@ def smooth_lip_sync(lip_sync: list[dict]) -> list[dict]:
         current_mouth = item["mouth"]
         next_mouth = lip_sync[i + 1]["mouth"]
 
-        smoothed_mouth = (
-            prev_mouth * 0.25
-            + current_mouth * 0.50
-            + next_mouth * 0.25
-        )
+        smoothed_mouth = (prev_mouth * 0.25 + current_mouth * 0.50 + next_mouth * 0.25)
 
         smoothed.append({
             **item,
