@@ -1,41 +1,60 @@
-// avatar/static/avatar/js/aituber_vtube_bridge.js
-
 import { VTubeStudioManager } from "./vtube_studio.js";
+
 
 let vtubeManager = null;
 let vtubeConnected = false;
 
-const connectVTubeBtn = document.getElementById("connectVTubeBtn");
-const vtubeHost = document.getElementById("vtubeHost");
-const vtubeStatusText = document.getElementById("vtubeStatusText");
-const currentExpression = document.getElementById("currentExpression");
+let connectVTubeBtn = null;
+let vtubeHost = null;
+let vtubeStatusText = null;
+let currentExpression = null;
 
-connectVTubeBtn.addEventListener("click", async () => {
-    const url = vtubeHost.value.trim() || "ws://localhost:8001";
+
+
+export function initializeVTubeStudioBridge() {
+    connectVTubeBtn = document.getElementById("connectVTubeBtn");
+    vtubeHost = document.getElementById("vtubeHost");
+    vtubeStatusText = document.getElementById("vtubeStatusText");
+    currentExpression = document.getElementById("currentExpression");
+
+    if (!connectVTubeBtn) {
+        console.warn("connectVTubeBtn が見つかりません");
+        return;
+    }
+
+    connectVTubeBtn.addEventListener("click", connectVTubeStudio);
+}
+
+
+/**
+ * VTube Studioへ接続する。
+ */
+async function connectVTubeStudio() {
+    const url = vtubeHost?.value.trim() || "ws://localhost:8001";
 
     try {
-        connectVTubeBtn.disabled = true;
-        connectVTubeBtn.textContent = "接続中...";
-        vtubeStatusText.textContent = "接続中...";
+        updateConnectionUI("connecting");
 
         vtubeManager = new VTubeStudioManager(url);
         await vtubeManager.initialize();
 
         vtubeConnected = true;
-        window.vtubeManager = vtubeManager;
 
-        vtubeStatusText.textContent = "接続済み";
-        connectVTubeBtn.textContent = "接続済み";
+        updateConnectionUI("connected");
 
         console.log("VTube Studio connected");
 
     } catch (error) {
         console.error("VTube Studio接続エラー:", error);
 
+        if (vtubeManager) {
+            vtubeManager.disconnect();
+        }
+
         vtubeConnected = false;
-        vtubeStatusText.textContent = "接続失敗";
-        connectVTubeBtn.textContent = "再接続";
-        connectVTubeBtn.disabled = false;
+        vtubeManager = null;
+
+        updateConnectionUI("failed");
 
         alert(
             "VTube Studio接続に失敗しました。\n\n" +
@@ -45,23 +64,101 @@ connectVTubeBtn.addEventListener("click", async () => {
             "3. URLが ws://localhost:8001 になっているか"
         );
     }
-});
+}
 
-export async function applyVTubeStudioMotion(emotion, lipSyncData, voiceSpeed = 1.0) {
-    if (!vtubeConnected || !vtubeManager || !vtubeManager.isConnected()) {
-        console.warn("VTube Studio未接続のためスキップ");
+
+
+function updateConnectionUI(status) {
+    if (!connectVTubeBtn || !vtubeStatusText) {
         return;
     }
 
-    const normalizedEmotion = (emotion || "normal").toUpperCase();
+    switch (status) {
+        case "connecting":
+            connectVTubeBtn.disabled = true;
+            connectVTubeBtn.textContent = "接続中...";
+            vtubeStatusText.textContent = "接続中...";
+            break;
 
-    await vtubeManager.changeExpression(normalizedEmotion);
+        case "connected":
+            connectVTubeBtn.disabled = true;
+            connectVTubeBtn.textContent = "接続済み";
+            vtubeStatusText.textContent = "接続済み";
+            break;
 
-    if (currentExpression) {
-        currentExpression.textContent = normalizedEmotion;
+        case "failed":
+            connectVTubeBtn.disabled = false;
+            connectVTubeBtn.textContent = "再接続";
+            vtubeStatusText.textContent = "接続失敗";
+            break;
+    }
+}
+
+
+
+function canUseVTubeStudio() {
+    return Boolean(
+        vtubeConnected &&
+        vtubeManager &&
+        vtubeManager.isConnected()
+    );
+}
+
+
+
+export async function applyVTubeStudioExpression(emotion) {
+    if (!canUseVTubeStudio()) {
+        console.warn("VTube Studio未接続のため表情変更をスキップ");
+        return;
     }
 
-    if (Array.isArray(lipSyncData) && lipSyncData.length > 0) {
+    const normalizedEmotion = String(
+        emotion || "normal"
+    ).toUpperCase();
+
+    try {
+        await vtubeManager.changeExpression(normalizedEmotion);
+
+        if (currentExpression) {
+            currentExpression.textContent = normalizedEmotion;
+        }
+
+    } catch (error) {
+        console.error("VTube Studio表情変更エラー:", error);
+    }
+}
+
+
+
+export async function runVTubeStudioLipSync(
+    lipSyncData = [],
+    voiceSpeed = 1.0
+) {
+    if (!canUseVTubeStudio()) {
+        console.warn("VTube Studio未接続のためリップシンクをスキップ");
+        return;
+    }
+
+    if (!Array.isArray(lipSyncData) || lipSyncData.length === 0) {
+        console.warn("lip_sync が空のためリップシンクをスキップ");
+        return;
+    }
+
+    try {
         await vtubeManager.lipSync(lipSyncData, voiceSpeed);
+
+    } catch (error) {
+        console.error("VTube Studioリップシンクエラー:", error);
     }
+}
+
+
+
+export function disconnectVTubeStudio() {
+    if (vtubeManager) {
+        vtubeManager.disconnect();
+    }
+
+    vtubeManager = null;
+    vtubeConnected = false;
 }
