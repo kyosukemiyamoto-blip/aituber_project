@@ -140,21 +140,60 @@
         </section>
 
 
+<!-- =========================
+     Bottom Left: Event Queue
+========================== -->
+    <section class="panel queue_panel">
+        <div class="panel_header">
+            <div>
+                <h2>Event Queue</h2>
+                <p class="panel_description">処理待ちイベント一覧</p>
+            </div>
+        </div>
+
+        <div class="event_queue" id="eventQueue">
+            <!-- JSでイベントが追加される -->
+        </div>
+    </section>
+
+
         <!-- =========================
-             Bottom: Event Queue
+            Bottom Right: Live Stream
         ========================== -->
-        <section class="panel queue_panel">
-            <div class="panel_header">
-                <div>
-                    <h2>Event Queue</h2>
-                    <p class="panel_description">処理待ちイベント一覧</p>
-                </div>
+    <section class="panel live_panel">
+        <div class="panel_header">
+            <div>
+                <h2>Live Stream</h2>
+                <p class="panel_description">
+                    YouTube Liveへ接続して配信画面へ移動
+                </p>
             </div>
 
-            <div class="event_queue" id="eventQueue">
-                <!-- JSでイベントが追加される -->
-            </div>
-        </section>
+            <span class="live_badge">LIVE</span>
+        </div>
+
+        <div class="live_action_area">
+            <input
+                type="url"
+                id="liveUrlInput"
+                placeholder="https://www.youtube.com/watch?v=..."
+                autocomplete="off"
+            >
+
+            <button
+                type="button"
+                id="connectLiveBtn"
+                class="start_live_button"
+                data-live-page-url="{% url 'live_page' %}"
+            >
+                配信接続
+            </button>
+
+            <p id="liveConnectionStatus">
+                未接続
+            </p>
+        </div>
+    </section>
 
     </main>
 </body>

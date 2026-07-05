@@ -1,16 +1,16 @@
 import {
     initializeVTubeStudioBridge
-} from "./aituber_vtube_bridge.js";
+} from "./core/aituber_vtube_bridge.js";
 
 import {
     initializeEventQueue,
     enqueueEvent
-} from "./event_queue.js";
+} from "./core/event_queue.js";
 
 
 import {
     initializeCommentUI
-} from "./comment_ui.js";
+} from "./core/comment_ui.js";
 
 
 import {
@@ -20,8 +20,11 @@ import {
     generateNewsTalk,
     generateWeatherTalk,
     sendUserComment
-} from "./avatar_actions.js";
+} from "./core/avatar_actions.js";
 
+import {
+    getYouTubeLiveInfo
+} from "./live/youtube_live_api.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     initializeVTubeStudioBridge();
@@ -44,7 +47,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const generateWeatherTalkBtn = document.getElementById("generateWeatherTalkBtn");
     const sendUserCommentBtn = document.getElementById("sendUserCommentBtn");
 
-    
+
+    const liveUrlInput = document.getElementById("liveUrlInput");
+    const connectLiveBtn = document.getElementById("connectLiveBtn");
+    const liveConnectionStatus = document.getElementById("liveConnectionStatus");
+
+
     function enqueueUserComment() {
         const usernameInput =
             document.getElementById("usernameInput");
@@ -104,4 +112,62 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
     );
+
+    connectLiveBtn.addEventListener("click", async () => {
+        const liveUrl = liveUrlInput.value.trim();
+
+        if (!liveUrl) {
+            liveConnectionStatus.textContent =
+                "YouTube Live URLを入力してください";
+
+            return;
+        }
+
+        connectLiveBtn.disabled = true;
+        liveConnectionStatus.textContent =
+            "配信情報を取得中...";
+
+        try {
+            const liveInfo =
+                await getYouTubeLiveInfo(liveUrl);
+
+            if (!liveInfo.liveChatId) {
+                throw new Error(
+                    "Live Chat IDを取得できませんでした"
+                );
+            }
+
+            const liveSetupData = {
+                liveUrl,
+                title: liveInfo.title || "",
+                videoId: liveInfo.videoId || "",
+                liveChatId: liveInfo.liveChatId
+            };
+
+            sessionStorage.setItem(
+                "aituberLiveSetup",
+                JSON.stringify(liveSetupData)
+            );
+
+            liveConnectionStatus.textContent =
+                "接続確認完了";
+
+            const livePageUrl =
+                connectLiveBtn.dataset.livePageUrl;
+
+            window.location.assign(livePageUrl);
+
+        } catch (error) {
+            console.error(
+                "YouTube Live接続エラー:",
+                error
+            );
+
+            liveConnectionStatus.textContent =
+                error.message ||
+                "配信への接続に失敗しました";
+
+            connectLiveBtn.disabled = false;
+        }
+    });
 });

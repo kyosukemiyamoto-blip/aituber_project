@@ -17,32 +17,41 @@ export function initializeVTubeStudioBridge() {
     vtubeStatusText = document.getElementById("vtubeStatusText");
     currentExpression = document.getElementById("currentExpression");
 
-    if (!connectVTubeBtn) {
-        console.warn("connectVTubeBtn が見つかりません");
-        return;
+    if (connectVTubeBtn) {
+        connectVTubeBtn.addEventListener("click", () => {
+            void connectVTubeStudio().catch(() => {});
+        });
     }
-
-    connectVTubeBtn.addEventListener("click", connectVTubeStudio);
 }
 
 
 /**
  * VTube Studioへ接続する。
  */
-async function connectVTubeStudio() {
-    const url = vtubeHost?.value.trim() || "ws://localhost:8001";
+export async function connectVTubeStudio(
+    urlOverride = null,
+    { showAlert = true } = {}
+) {
+    const url =
+        urlOverride ||
+        vtubeHost?.value.trim() ||
+        "ws://localhost:8001";
 
     try {
         updateConnectionUI("connecting");
+
+        if (vtubeManager) {
+            vtubeManager.disconnect();
+        }
 
         vtubeManager = new VTubeStudioManager(url);
         await vtubeManager.initialize();
 
         vtubeConnected = true;
-
         updateConnectionUI("connected");
 
         console.log("VTube Studio connected");
+        return true;
 
     } catch (error) {
         console.error("VTube Studio接続エラー:", error);
@@ -53,17 +62,23 @@ async function connectVTubeStudio() {
 
         vtubeConnected = false;
         vtubeManager = null;
-
         updateConnectionUI("failed");
 
-        alert(
-            "VTube Studio接続に失敗しました。\n\n" +
-            "確認事項:\n" +
-            "1. VTube Studioが起動しているか\n" +
-            "2. Plugin APIが有効か\n" +
-            "3. URLが ws://localhost:8001 になっているか"
-        );
+        if (showAlert) {
+            alert(
+                "VTube Studio接続に失敗しました。\n\n" +
+                "1. VTube Studioが起動しているか\n" +
+                "2. Plugin APIが有効か\n" +
+                "3. URLが ws://localhost:8001 か"
+            );
+        }
+
+        throw error;
     }
+}
+
+export function isVTubeStudioConnected() {
+    return canUseVTubeStudio();
 }
 
 

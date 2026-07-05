@@ -1,6 +1,3 @@
-// VTube Studio API Integration
-// VTube Studio API Documentation: https://github.com/DenchiSoft/VTubeStudio
-
 export class VTubeStudioAPI {
     constructor(url = "ws://localhost:8001") {
         this.url = url;
