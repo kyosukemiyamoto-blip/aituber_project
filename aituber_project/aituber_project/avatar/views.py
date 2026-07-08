@@ -36,6 +36,7 @@ def live_page(request):
     return render(request, "avatar/live.html")
 
 
+GOOGLE_CLOUD_CONSOLE_API = os.environ.get("GOOGLE_CLOUD_CONSOLE_API")
 
 @handle_api_errors
 def generate_comment_api(request):
@@ -142,7 +143,6 @@ def delete_voice_api(request):
     return JsonResponse(result)
 
 
-GOOGLE_CLOUD_CONSOLE_API = os.environ.get("GOOGLE_CLOUD_CONSOLE_API")
 
 @require_GET
 def youtube_live_comments_api(request):
@@ -229,14 +229,6 @@ YOUTUBE_VIDEOS_API_URL = ("https://www.googleapis.com/youtube/v3/videos")
 
 
 def extract_youtube_video_id(url: str) -> str | None:
-    """
-    YouTube URLから動画IDを抽出する。
-
-    対応例:
-    https://www.youtube.com/watch?v=VIDEO_ID
-    https://youtu.be/VIDEO_ID
-    https://www.youtube.com/live/VIDEO_ID
-    """
     if not url:
         return None
 

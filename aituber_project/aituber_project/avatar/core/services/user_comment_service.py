@@ -5,14 +5,8 @@ from .voice_service import build_voice_reply
 from ..repositories.memory_repository import add_ShortTermMemory
 
 
-def create_user_comment_reply(
-    username: str,
-    user_message: str,
-) -> dict:
-    conversation_data = generate_user_reply(
-        username=username,
-        user_message=user_message,
-    )
+def create_user_comment_reply(username: str, user_message: str) -> dict:
+    conversation_data = generate_user_reply(username=username, user_message=user_message)
 
     user_message_object, assistant_message_object = add_ShortTermMemory(
         username,
