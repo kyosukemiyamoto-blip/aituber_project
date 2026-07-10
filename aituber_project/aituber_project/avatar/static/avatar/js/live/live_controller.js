@@ -337,7 +337,7 @@ async function runSelfIntroduction() {
     );
 
     try {
-        await generateSelfIntroduction();
+        await generateSelfIntroduction(ui);
 
         showIntroductionCompleted(ui);
 
