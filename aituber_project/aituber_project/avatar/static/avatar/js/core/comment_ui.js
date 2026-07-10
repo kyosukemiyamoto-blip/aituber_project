@@ -19,9 +19,7 @@ function escapeHTML(value) {
 }
 
 
-/**
- * コメントをコメント欄へ追加する。
- */
+
 const MAX_LIVE_COMMENTS = 10;
 
 export function addCommentToUI(comment, type = "normal") {
@@ -37,7 +35,6 @@ export function addCommentToUI(comment, type = "normal") {
     const text = comment.text || "";
     const time = comment.time || "now";
 
-    // アバターでは先頭の@を除外
     const avatarName = username.replace(/^@+/, "");
     const avatarLetter =
         avatarName.charAt(0).toUpperCase() || "?";

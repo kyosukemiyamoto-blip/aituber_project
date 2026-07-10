@@ -4,18 +4,14 @@ const eventQueueData = [];
 let isProcessing = false;
 
 
-/**
- * キュー表示用のDOMを設定する。
- */
+
 export function initializeEventQueue(element) {
     eventQueueElement = element;
     renderEventQueue();
 }
 
 
-/**
- * イベントをキューへ追加する。
- */
+
 export function enqueueEvent(type, priority, handler) {
     if (typeof handler !== "function") {
         throw new TypeError("handler must be a function");
@@ -39,9 +35,7 @@ export function enqueueEvent(type, priority, handler) {
 }
 
 
-/**
- * 現在のキューを画面へ表示する。
- */
+
 function renderEventQueue() {
     if (!eventQueueElement) {
         return;
@@ -62,9 +56,7 @@ function renderEventQueue() {
 }
 
 
-/**
- * キューを先頭から順番に実行する。
- */
+
 async function processQueue() {
     if (isProcessing) {
         return;

@@ -29,17 +29,13 @@ import {
 document.addEventListener("DOMContentLoaded", () => {
     initializeVTubeStudioBridge();
 
-    // ==============================
-    // DOM
-    // ==============================
+
     const commentList = document.getElementById("commentList");
     const eventQueue = document.getElementById("eventQueue");
 
     initializeCommentUI(commentList);
     initializeEventQueue(eventQueue);
-    // ==============================
-    // DOM
-    // ==============================
+
     const generateSuperChatBtn = document.getElementById("generateSuperChatBtn");
     const generateCommentBtn = document.getElementById("generateCommentBtn");
     const generateSelfIntroductionBtn = document.getElementById("generateSelfIntroductionBtn");
@@ -76,9 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     }
 
-    // ==============================
-    // Button events
-    // ==============================
+
     generateSuperChatBtn.addEventListener("click", () => {
         enqueueEvent("generate_superchat", 100, generateSuperChat);
     });

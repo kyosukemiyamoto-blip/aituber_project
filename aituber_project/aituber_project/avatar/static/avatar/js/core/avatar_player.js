@@ -6,9 +6,7 @@ import {
 } from "./aituber_vtube_bridge.js";
 
 
-/**
- * APIレスポンスからアバター再生に必要な情報を取り出す。
- */
+
 function extractReplyPayload(data) {
     const reply = data.reply || data;
 
@@ -22,9 +20,7 @@ function extractReplyPayload(data) {
 }
 
 
-/**
- * 再生済み音声ファイルをサーバーから削除する。
- */
+
 async function deleteVoiceFile(audioId) {
     if (!audioId) {
         return;
@@ -49,10 +45,6 @@ async function deleteVoiceFile(audioId) {
 }
 
 
-/**
- * 音声を再生し、同時にリップシンクを開始する。
- * 再生終了後は音声ファイルを削除する。
- */
 function playVoiceWithLipSyncAndCleanup(reply) {
     return new Promise((resolve, reject) => {
         const {
@@ -110,11 +102,7 @@ function playVoiceWithLipSyncAndCleanup(reply) {
 }
 
 
-/**
- * APIレスポンスを受け取り、
- * 表情変更と音声・リップシンク再生を実行する。
- */
-export async function handleAvatarResult(data) {
+export async function handleAvatarResult(data, ui = null) {
     const reply = extractReplyPayload(data);
 
     console.log("script:", reply.script);
@@ -123,6 +111,10 @@ export async function handleAvatarResult(data) {
     console.log("audioUrl:", reply.audioUrl);
     console.log("lipSync:", reply.lipSync);
 
+    if (ui) {
+        showCurrentReply(ui, reply);
+    }
+
     await applyVTubeStudioExpression(
         reply.emotion
     );
@@ -130,4 +122,6 @@ export async function handleAvatarResult(data) {
     await playVoiceWithLipSyncAndCleanup(
         reply
     );
+
+    return reply;
 }

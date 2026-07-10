@@ -58,9 +58,7 @@ import {
 let ui = null;
 
 
-/**
- * Liveページ全体を初期化する。
- */
+
 export function initializeLivePage() {
     if (liveState.initialized) {
         return;
@@ -103,9 +101,7 @@ export function initializeLivePage() {
 }
 
 
-/**
- * 外部モジュールへ画面上の表示先を渡す。
- */
+
 function initializeDependencies() {
     initializeVTubeStudioBridge();
     initializeCommentUI(ui.commentList);
@@ -113,9 +109,6 @@ function initializeDependencies() {
 }
 
 
-/**
- * Live画面のボタンイベントを登録する。
- */
 function bindLiveEvents() {
     ui.startBroadcastBtn.addEventListener(
         "click",
@@ -149,9 +142,7 @@ function handleClearComments() {
 }
 
 
-/**
- * YouTube LiveコメントPollingを開始する。
- */
+
 function startCommentPolling() {
     const liveChatId =
         liveState.liveInfo?.liveChatId;
@@ -186,9 +177,7 @@ function startCommentPolling() {
 }
 
 
-/**
- * 新着コメントを画面へ追加する。
- */
+
 function handleReceivedComments(comments) {
     if (
         !Array.isArray(comments) ||
@@ -206,9 +195,8 @@ function handleReceivedComments(comments) {
 }
 
 
-/**
- * Polling状態を画面へ反映する。
- */
+
+
 function handlePollingStatus(status) {
     showPollingStatus(ui, status);
 
@@ -234,9 +222,7 @@ function handlePollingStatus(status) {
 }
 
 
-/**
- * Pollingエラーを処理する。
- */
+
 function handlePollingError(error) {
     console.error(
         "YouTube Liveコメント取得エラー:",
@@ -262,9 +248,7 @@ function handlePollingError(error) {
 }
 
 
-/**
- * YouTube Live終了時の状態を反映する。
- */
+
 function handleLiveEnd(data) {
     liveState.pollingStarted = false;
     liveState.pollingReady = false;
@@ -284,9 +268,8 @@ function handleLiveEnd(data) {
 }
 
 
-/**
- * AITuberの配信処理を開始する。
- */
+
+
 function startBroadcast() {
     if (liveState.broadcastStarted) {
         return;
@@ -325,9 +308,8 @@ function startBroadcast() {
 }
 
 
-/**
- * 自己紹介をイベントキューへ追加する。
- */
+
+
 function enqueueSelfIntroduction() {
     showIntroductionQueued(ui);
 
@@ -344,9 +326,8 @@ function enqueueSelfIntroduction() {
 }
 
 
-/**
- * 自己紹介生成・再生を実行する。
- */
+
+
 async function runSelfIntroduction() {
     showIntroductionProcessing(ui);
 
@@ -387,9 +368,8 @@ async function runSelfIntroduction() {
 }
 
 
-/**
- * Pollingと自動処理を停止する。
- */
+
+
 function stopLiveSession() {
     stopYouTubeLiveCommentPolling();
 
@@ -408,9 +388,7 @@ function stopLiveSession() {
 }
 
 
-/**
- * ページ離脱時にPollingを停止する。
- */
+
 export function destroyLivePage() {
     stopYouTubeLiveCommentPolling();
 }

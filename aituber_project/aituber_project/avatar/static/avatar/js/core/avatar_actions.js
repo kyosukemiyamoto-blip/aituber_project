@@ -52,19 +52,29 @@ export async function generateCommentAutomatically() {
 }
 
 
-export async function generateSelfIntroduction() {
+export async function generateSelfIntroduction(ui = null) {
     try {
         const data = await fetchJSON(
             "/api/self-introduction/"
         );
 
-        await handleAvatarResult(data);
+        return await handleAvatarResult(
+            data,
+            ui
+        );
 
     } catch (error) {
         console.error(
             "自己紹介生成エラー:",
             error
         );
+
+        if (ui) {
+            ui.replyProcessStatus.textContent =
+                "エラー";
+        }
+
+        throw error;
     }
 }
 

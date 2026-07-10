@@ -11,7 +11,6 @@ function getRequiredElement(id) {
 
 export function getLiveElements() {
     return {
-        // Live状態
         liveStatusBadge:
             getRequiredElement("liveStatusBadge"),
 
@@ -21,7 +20,6 @@ export function getLiveElements() {
         stopLiveBtn:
             getRequiredElement("stopLiveBtn"),
 
-        // Live情報
         liveTitleText:
             getRequiredElement("liveTitleText"),
 
@@ -31,7 +29,6 @@ export function getLiveElements() {
         commentPollingStatus:
             getRequiredElement("commentPollingStatus"),
 
-        // 現在処理中のコメント
         currentCommentUsername:
             getRequiredElement("currentCommentUsername"),
 
@@ -41,7 +38,6 @@ export function getLiveElements() {
         currentCommentText:
             getRequiredElement("currentCommentText"),
 
-        // 現在の返信
         replyProcessStatus:
             getRequiredElement("replyProcessStatus"),
 
@@ -54,21 +50,18 @@ export function getLiveElements() {
         currentAudioStatus:
             getRequiredElement("currentAudioStatus"),
 
-        // イベントキュー
         queueCount:
             getRequiredElement("queueCount"),
 
         eventQueue:
             getRequiredElement("eventQueue"),
 
-        // コメント一覧
         commentList:
             getRequiredElement("liveCommentList"),
 
         clearCommentsBtn:
             getRequiredElement("clearCommentsBtn"),
 
-        // システムログ
         systemLog:
             getRequiredElement("systemLog"),
 

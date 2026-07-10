@@ -17,9 +17,7 @@ export class VTubeStudioAPI {
         this.availableParameters = [];
     }
 
-    // ==============================
-    // Utility
-    // ==============================
+
     sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
@@ -28,9 +26,7 @@ export class VTubeStudioAPI {
         return Math.max(min, Math.min(max, value));
     }
 
-    // ==============================
-    // WebSocket Connection
-    // ==============================
+ 
     connect() {
         return new Promise((resolve, reject) => {
             try {
@@ -78,9 +74,7 @@ export class VTubeStudioAPI {
         return this.connected && this.authenticated;
     }
 
-    // ==============================
-    // Message Handling
-    // ==============================
+
     sendMessage(messageType, data = {}) {
         return new Promise((resolve, reject) => {
             if (!this.connected || !this.ws) {
@@ -141,9 +135,7 @@ export class VTubeStudioAPI {
         }
     }
 
-    // ==============================
-    // Authentication
-    // ==============================
+
     async requestAuthToken() {
         try {
             const response = await this.sendMessage("AuthenticationTokenRequest", {
@@ -200,9 +192,7 @@ export class VTubeStudioAPI {
         }
     }
 
-    // ==============================
-    // Model / Parameters
-    // ==============================
+
     async getCurrentModel() {
         try {
             const response = await this.sendMessage("CurrentModelRequest");
@@ -263,9 +253,7 @@ export class VTubeStudioAPI {
         }
     }
 
-    // ==============================
-    // Mouth / Lip Sync
-    // ==============================
+
     async setMouthOpen(value, weight = 1.0) {
         const mouthValue = this.clamp(Number(value) || 0.0, 0.0, 1.0);
 
@@ -277,14 +265,6 @@ export class VTubeStudioAPI {
     }
 
     getMouthOpenValue(segment) {
-        /*
-            新方式:
-              { mouth: 0.45, duration: 0.08 }
-
-            旧方式:
-              { vowel: "a", duration: 0.12 }
-        */
-
         if (typeof segment.mouth === "number") {
             return this.clamp(segment.mouth, 0.0, 1.0);
         }
@@ -357,9 +337,7 @@ export class VTubeStudioAPI {
         }
     }
 
-    // ==============================
-    // Hotkeys / Expressions
-    // ==============================
+
     async triggerHotkey(hotkeyID) {
         try {
             await this.sendMessage("HotkeyTriggerRequest", {
@@ -422,9 +400,7 @@ export class VTubeStudioAPI {
         await this.setExpression(expressionName);
     }
 
-    // ==============================
-    // Motions
-    // ==============================
+
     async playRandomMotion(motionNames) {
         try {
             const hotkeys = await this.getAvailableHotkeys();
@@ -457,9 +433,7 @@ export class VTubeStudioAPI {
 }
 
 
-// ==============================
-// VTube Studio Manager
-// ==============================
+
 export class VTubeStudioManager {
     constructor(url = "ws://localhost:8001") {
         this.api = new VTubeStudioAPI(url);

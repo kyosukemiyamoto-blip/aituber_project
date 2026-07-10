@@ -25,9 +25,7 @@ export function initializeVTubeStudioBridge() {
 }
 
 
-/**
- * VTube Studioへ接続する。
- */
+
 export async function connectVTubeStudio(
     urlOverride = null,
     { showAlert = true } = {}
