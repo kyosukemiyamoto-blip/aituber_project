@@ -125,3 +125,17 @@ export async function handleAvatarResult(data, ui = null) {
 
     return reply;
 }
+
+export function showCurrentReply(ui, reply) {
+    ui.currentReplyText.textContent =
+        reply.script || "返信内容がありません。";
+
+    ui.currentReplyEmotion.textContent =
+        reply.emotion || "-";
+
+    ui.currentAudioStatus.textContent =
+        reply.audioUrl ? "音声生成済み" : "音声なし";
+
+    ui.replyProcessStatus.textContent =
+        "再生中";
+}
