@@ -79,51 +79,63 @@ export async function generateSelfIntroduction(ui = null) {
 }
 
 
-export async function generateNewsTalk() {
+export async function generateNewsTalk(ui = null) {
     try {
         const data = await fetchJSON(
             "/api/news-talk/"
         );
 
-        await handleAvatarResult(data);
+        return await handleAvatarResult(data, ui);
 
     } catch (error) {
         console.error(
             "ニューストーク生成エラー:",
             error
         );
+
+        throw error;
     }
 }
 
 
-export async function generateWeatherTalk() {
+export async function generateWeatherTalk(ui = null) {
     try {
         const data = await fetchJSON(
             "/api/weather-talk/"
         );
 
-        await handleAvatarResult(data);
+        return await handleAvatarResult(data, ui);
 
     } catch (error) {
         console.error(
             "ウェザートーク生成エラー:",
             error
         );
+
+        throw error;
     }
 }
 
 
-export async function sendUserComment(
-    username,
-    message
+export async function replyToLiveComment(
+    comment,
+    ui = null
 ) {
-    try {
-        addCommentToUI({
-            username,
-            text: message,
-            time: "now"
-        });
+    const username = String(
+        comment?.username || "viewer"
+    ).trim();
 
+    const message = String(
+        comment?.text || ""
+    ).trim();
+
+    if (!message) {
+        throw new Error(
+            "返信対象のコメント本文が空です"
+        );
+    }
+
+    try {
         const data = await fetchJSON(
             "/api/user-comment/",
             {
@@ -138,17 +150,35 @@ export async function sendUserComment(
             }
         );
 
-        console.log(
-            "user comment response:",
-            data
+        return await handleAvatarResult(
+            data,
+            ui
         );
-
-        await handleAvatarResult(data);
 
     } catch (error) {
         console.error(
-            "user comment error:",
+            "YouTube Liveコメント返信エラー:",
             error
         );
+
+        throw error;
     }
+}
+
+
+export async function sendUserComment(
+    username,
+    message
+) {
+    addCommentToUI({
+        username,
+        text: message,
+        time: "now"
+    });
+
+    return await replyToLiveComment({
+        username,
+        text: message,
+        time: "now"
+    });
 }

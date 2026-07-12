@@ -40,7 +40,7 @@ export function resetLiveView(ui) {
     ui.currentReplyEmotion.textContent = "-";
     ui.currentAudioStatus.textContent = "-";
 
-    ui.queueCount.textContent = "0";
+    showQueueCount(ui, 0);
     clearSystemLog(ui);
 }
 
@@ -146,6 +146,8 @@ export function showLiveEnded(ui) {
         "YouTube Live終了";
 
     ui.startBroadcastBtn.disabled = true;
+    ui.startBroadcastBtn.textContent =
+        "ライブ終了";
 }
 
 
@@ -162,10 +164,7 @@ export function showBroadcastStarted(ui) {
 }
 
 
-export function showLiveStopped(
-    ui,
-    broadcastStarted
-) {
+export function showLiveStopped(ui) {
     setBadgeState(
         ui,
         "停止中",
@@ -176,16 +175,19 @@ export function showLiveStopped(
         "コメント取得停止";
 
     ui.startBroadcastBtn.disabled = true;
+    ui.startBroadcastBtn.textContent =
+        "停止済み";
+}
 
-    if (!broadcastStarted) {
-        ui.startBroadcastBtn.textContent =
-            "配信開始";
-    }
+
+export function showQueueCount(ui, count) {
+    ui.queueCount.textContent = String(
+        Math.max(Number(count) || 0, 0)
+    );
 }
 
 
 export function showIntroductionQueued(ui) {
-    ui.queueCount.textContent = "1";
     ui.replyProcessStatus.textContent =
         "キュー待機中";
     ui.currentReplyText.textContent =
@@ -197,7 +199,6 @@ export function showIntroductionQueued(ui) {
 
 
 export function showIntroductionProcessing(ui) {
-    ui.queueCount.textContent = "0";
     ui.replyProcessStatus.textContent =
         "自己紹介処理中";
     ui.currentReplyText.textContent =
@@ -210,8 +211,6 @@ export function showIntroductionProcessing(ui) {
 export function showIntroductionCompleted(ui) {
     ui.replyProcessStatus.textContent =
         "待機中";
-    ui.currentReplyText.textContent =
-        "自己紹介処理を終了しました。";
     ui.currentAudioStatus.textContent =
         "終了";
 }
@@ -222,6 +221,98 @@ export function showIntroductionError(ui) {
         "エラー";
     ui.currentReplyText.textContent =
         "自己紹介処理でエラーが発生しました。";
+    ui.currentAudioStatus.textContent =
+        "エラー";
+}
+
+
+export function showCommentProcessing(ui, comment) {
+    ui.currentCommentUsername.textContent =
+        comment?.username || "unknown";
+
+    ui.currentCommentTime.textContent =
+        comment?.time || "now";
+
+    ui.currentCommentText.textContent =
+        comment?.text || "";
+
+    ui.replyProcessStatus.textContent =
+        "コメント返信処理中";
+
+    ui.currentReplyText.textContent =
+        "返信を生成しています。";
+
+    ui.currentReplyEmotion.textContent = "-";
+    ui.currentAudioStatus.textContent =
+        "生成中";
+}
+
+
+export function showCommentCompleted(ui) {
+    ui.replyProcessStatus.textContent =
+        "待機中";
+
+    ui.currentAudioStatus.textContent =
+        "再生終了";
+}
+
+
+export function showCommentError(ui) {
+    ui.replyProcessStatus.textContent =
+        "コメント返信エラー";
+
+    ui.currentReplyText.textContent =
+        "コメントへの返信に失敗しました。";
+
+    ui.currentAudioStatus.textContent =
+        "エラー";
+}
+
+
+export function showIdleTalkProcessing(ui, talkType) {
+    const label =
+        talkType === "news"
+            ? "ニューストーク"
+            : "ウェザートーク";
+
+    ui.currentCommentUsername.textContent = "-";
+    ui.currentCommentTime.textContent = "-";
+    ui.currentCommentText.textContent =
+        `${label}を実行しています。`;
+
+    ui.replyProcessStatus.textContent =
+        `${label}処理中`;
+
+    ui.currentReplyText.textContent =
+        `${label}を生成しています。`;
+
+    ui.currentReplyEmotion.textContent = "-";
+    ui.currentAudioStatus.textContent =
+        "生成中";
+}
+
+
+export function showIdleTalkCompleted(ui) {
+    ui.replyProcessStatus.textContent =
+        "待機中";
+
+    ui.currentAudioStatus.textContent =
+        "再生終了";
+}
+
+
+export function showIdleTalkError(ui, talkType) {
+    const label =
+        talkType === "news"
+            ? "ニューストーク"
+            : "ウェザートーク";
+
+    ui.replyProcessStatus.textContent =
+        `${label}エラー`;
+
+    ui.currentReplyText.textContent =
+        `${label}の生成に失敗しました。`;
+
     ui.currentAudioStatus.textContent =
         "エラー";
 }

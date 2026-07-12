@@ -4,7 +4,9 @@ import {
 
 import {
     initializeEventQueue,
-    enqueueEvent
+    enqueueEvent,
+    clearEventQueue,
+    isEventQueueIdle
 } from "../core/event_queue.js";
 
 import {
@@ -13,7 +15,10 @@ import {
 } from "../core/comment_ui.js";
 
 import {
-    generateSelfIntroduction
+    generateSelfIntroduction,
+    generateNewsTalk,
+    generateWeatherTalk,
+    replyToLiveComment
 } from "../core/avatar_actions.js";
 
 import {
@@ -45,18 +50,36 @@ import {
     showLiveEnded,
     showBroadcastStarted,
     showLiveStopped,
+    showQueueCount,
     showIntroductionQueued,
     showIntroductionProcessing,
     showIntroductionCompleted,
     showIntroductionError,
+    showCommentProcessing,
+    showCommentCompleted,
+    showCommentError,
+    showIdleTalkProcessing,
+    showIdleTalkCompleted,
+    showIdleTalkError,
     clearLiveComments,
     clearSystemLog,
     writeSystemLog
 } from "./live_view.js";
 
 
-let ui = null;
+const EVENT_PRIORITY = Object.freeze({
+    SELF_INTRODUCTION: 100,
+    LIVE_COMMENT: 80,
+    IDLE_TALK: 10
+});
 
+const IDLE_TALK_DELAY_MS = 5000;
+
+let ui = null;
+let idleTalkTimerId = null;
+let nextIdleTalkType = "news";
+
+const receivedCommentKeys = new Set();
 
 
 export function initializeLivePage() {
@@ -66,9 +89,10 @@ export function initializeLivePage() {
 
     ui = getLiveElements();
 
-    initializeDependencies();
     resetLiveState();
     resetLiveView(ui);
+    resetAutomationState();
+    initializeDependencies();
     bindLiveEvents();
 
     const liveInfo = loadLiveSetupData();
@@ -101,11 +125,41 @@ export function initializeLivePage() {
 }
 
 
+function resetAutomationState() {
+    cancelIdleTalkTimer();
+    receivedCommentKeys.clear();
+    nextIdleTalkType = "news";
+}
+
 
 function initializeDependencies() {
     initializeVTubeStudioBridge();
     initializeCommentUI(ui.commentList);
-    initializeEventQueue(ui.eventQueue);
+
+    initializeEventQueue(
+        ui.eventQueue,
+        {
+            onChange: handleQueueChange,
+            onIdle: handleQueueIdle
+        }
+    );
+}
+
+
+function handleQueueChange({ pendingCount }) {
+    showQueueCount(
+        ui,
+        pendingCount
+    );
+}
+
+
+function handleQueueIdle() {
+    if (!canRunAutomaticBroadcast()) {
+        return;
+    }
+
+    scheduleIdleTalk();
 }
 
 
@@ -142,7 +196,6 @@ function handleClearComments() {
 }
 
 
-
 function startCommentPolling() {
     const liveChatId =
         liveState.liveInfo?.liveChatId;
@@ -177,7 +230,6 @@ function startCommentPolling() {
 }
 
 
-
 function handleReceivedComments(comments) {
     if (
         !Array.isArray(comments) ||
@@ -192,9 +244,106 @@ function handleReceivedComments(comments) {
         ui,
         `新着コメントを${comments.length}件取得しました`
     );
+
+    for (const comment of comments) {
+        const commentKey =
+            createCommentKey(comment);
+
+        const alreadyReceived =
+            receivedCommentKeys.has(commentKey);
+
+        receivedCommentKeys.add(commentKey);
+
+        if (
+            alreadyReceived ||
+            !liveState.broadcastStarted
+        ) {
+            continue;
+        }
+
+        enqueueLiveComment(comment);
+    }
 }
 
 
+function createCommentKey(comment) {
+    if (comment?.id) {
+        return String(comment.id);
+    }
+
+    return [
+        comment?.username || "",
+        comment?.text || "",
+        comment?.time || ""
+    ].join("\u0000");
+}
+
+
+function enqueueLiveComment(comment) {
+    cancelIdleTalkTimer();
+
+    const username =
+        comment?.username || "unknown";
+
+    enqueueEvent(
+        `live_comment:${username}`,
+        EVENT_PRIORITY.LIVE_COMMENT,
+        () => runLiveCommentReply(comment)
+    );
+
+    writeSystemLog(
+        ui,
+        `${username} のコメント返信をキューへ追加しました`
+    );
+}
+
+
+async function runLiveCommentReply(comment) {
+    const username =
+        comment?.username || "unknown";
+
+    showCommentProcessing(
+        ui,
+        comment
+    );
+
+    writeSystemLog(
+        ui,
+        `${username} のコメント返信を開始しました`
+    );
+
+    try {
+        await replyToLiveComment(
+            comment,
+            ui
+        );
+
+        showCommentCompleted(ui);
+
+        writeSystemLog(
+            ui,
+            `${username} のコメント返信を終了しました`
+        );
+
+    } catch (error) {
+        console.error(
+            "Liveコメント返信処理エラー:",
+            error
+        );
+
+        showCommentError(ui);
+
+        writeSystemLog(
+            ui,
+            `コメント返信エラー: ${
+                error?.message || "不明なエラー"
+            }`,
+            "error"
+        );
+
+        throw error;
+    }
+}
 
 
 function handlePollingStatus(status) {
@@ -222,7 +371,6 @@ function handlePollingStatus(status) {
 }
 
 
-
 function handlePollingError(error) {
     console.error(
         "YouTube Liveコメント取得エラー:",
@@ -248,12 +396,14 @@ function handlePollingError(error) {
 }
 
 
-
 function handleLiveEnd(data) {
     liveState.pollingStarted = false;
     liveState.pollingReady = false;
+    liveState.broadcastStarted = false;
     liveState.liveEnded = true;
 
+    cancelIdleTalkTimer();
+    clearEventQueue();
     showLiveEnded(ui);
 
     const offlineAt =
@@ -266,8 +416,6 @@ function handleLiveEnd(data) {
         `YouTube Liveが終了しました${offlineAt}`
     );
 }
-
-
 
 
 function startBroadcast() {
@@ -296,6 +444,7 @@ function startBroadcast() {
     }
 
     liveState.broadcastStarted = true;
+    nextIdleTalkType = "news";
 
     showBroadcastStarted(ui);
 
@@ -308,14 +457,12 @@ function startBroadcast() {
 }
 
 
-
-
 function enqueueSelfIntroduction() {
     showIntroductionQueued(ui);
 
     enqueueEvent(
         "self_introduction",
-        100,
+        EVENT_PRIORITY.SELF_INTRODUCTION,
         runSelfIntroduction
     );
 
@@ -324,8 +471,6 @@ function enqueueSelfIntroduction() {
         "自己紹介をイベントキューへ追加しました"
     );
 }
-
-
 
 
 async function runSelfIntroduction() {
@@ -368,6 +513,126 @@ async function runSelfIntroduction() {
 }
 
 
+function canRunAutomaticBroadcast() {
+    return Boolean(
+        liveState.broadcastStarted &&
+        liveState.pollingStarted &&
+        !liveState.liveEnded
+    );
+}
+
+
+function scheduleIdleTalk() {
+    if (
+        idleTalkTimerId !== null ||
+        !canRunAutomaticBroadcast() ||
+        !isEventQueueIdle()
+    ) {
+        return;
+    }
+
+    idleTalkTimerId = setTimeout(() => {
+        idleTalkTimerId = null;
+
+        if (
+            !canRunAutomaticBroadcast() ||
+            !isEventQueueIdle()
+        ) {
+            return;
+        }
+
+        enqueueIdleTalk();
+    }, IDLE_TALK_DELAY_MS);
+}
+
+
+function cancelIdleTalkTimer() {
+    if (idleTalkTimerId === null) {
+        return;
+    }
+
+    clearTimeout(idleTalkTimerId);
+    idleTalkTimerId = null;
+}
+
+
+function enqueueIdleTalk() {
+    const talkType = nextIdleTalkType;
+
+    nextIdleTalkType =
+        talkType === "news"
+            ? "weather"
+            : "news";
+
+    enqueueEvent(
+        `${talkType}_talk`,
+        EVENT_PRIORITY.IDLE_TALK,
+        () => runIdleTalk(talkType)
+    );
+
+    writeSystemLog(
+        ui,
+        `${
+            talkType === "news"
+                ? "ニューストーク"
+                : "ウェザートーク"
+        }をキューへ追加しました`
+    );
+}
+
+
+async function runIdleTalk(talkType) {
+    const label =
+        talkType === "news"
+            ? "ニューストーク"
+            : "ウェザートーク";
+
+    showIdleTalkProcessing(
+        ui,
+        talkType
+    );
+
+    writeSystemLog(
+        ui,
+        `${label}を開始しました`
+    );
+
+    try {
+        if (talkType === "news") {
+            await generateNewsTalk(ui);
+        } else {
+            await generateWeatherTalk(ui);
+        }
+
+        showIdleTalkCompleted(ui);
+
+        writeSystemLog(
+            ui,
+            `${label}を終了しました`
+        );
+
+    } catch (error) {
+        console.error(
+            `${label}処理エラー:`,
+            error
+        );
+
+        showIdleTalkError(
+            ui,
+            talkType
+        );
+
+        writeSystemLog(
+            ui,
+            `${label}エラー: ${
+                error?.message || "不明なエラー"
+            }`,
+            "error"
+        );
+
+        throw error;
+    }
+}
 
 
 function stopLiveSession() {
@@ -375,11 +640,11 @@ function stopLiveSession() {
 
     liveState.pollingStarted = false;
     liveState.pollingReady = false;
+    liveState.broadcastStarted = false;
 
-    showLiveStopped(
-        ui,
-        liveState.broadcastStarted
-    );
+    cancelIdleTalkTimer();
+    clearEventQueue();
+    showLiveStopped(ui);
 
     writeSystemLog(
         ui,
@@ -388,7 +653,11 @@ function stopLiveSession() {
 }
 
 
-
 export function destroyLivePage() {
     stopYouTubeLiveCommentPolling();
+
+    liveState.broadcastStarted = false;
+
+    cancelIdleTalkTimer();
+    clearEventQueue();
 }
