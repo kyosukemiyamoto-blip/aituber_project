@@ -21,21 +21,12 @@ from ..soul.input_builder import (
 
 
 
-def generate_user_reply(
-    username: str,
-    user_message: str,
-) -> dict:
+def generate_user_reply(username: str, user_message: str) -> dict:
     short_term_memory = get_ShortTermMemory(username)
-    formatted_short_term_memory = format_short_term_memory(
-        short_term_memory,
-        username,
-    )
+    formatted_short_term_memory = format_short_term_memory(short_term_memory, username)
 
     long_term_memory = get_LongTermMemory(username)
-    formatted_long_term_memory = format_long_term_memory(
-        long_term_memory,
-        username,
-    )
+    formatted_long_term_memory = format_long_term_memory(long_term_memory, username)
 
     instruction = generate_character_reply_instruction()
 

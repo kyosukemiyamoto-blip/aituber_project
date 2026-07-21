@@ -29,6 +29,8 @@ from .core.services.comment_reply_service import (
     create_comment_reply,
 )
 
+from .core.services.voice_service import build_voice_reply
+
 def index(request):
     return render(request, "avatar/index.html")
 
@@ -117,6 +119,36 @@ def user_comment_api(request):
     return JsonResponse({
         "reply": reply_data,
     })
+
+
+@csrf_exempt
+@handle_api_errors
+def use_script_directly(request):
+    data, error_response = parse_post_json(request)
+
+    if error_response:
+        return error_response
+    
+    script = data.get("script")
+    emotion = data.get("emotion")
+
+    if not script or not emotion:
+        return JsonResponse(
+            {            
+                "error": "scriptとemotionは必須です。",
+                "code": "INVALID_INPUT",
+            },
+            status=400,
+        )
+    
+    reply_data = build_voice_reply(script, emotion)
+
+    return JsonResponse({
+        "reply": reply_data
+        })
+    
+    
+    
 
 
 @csrf_exempt

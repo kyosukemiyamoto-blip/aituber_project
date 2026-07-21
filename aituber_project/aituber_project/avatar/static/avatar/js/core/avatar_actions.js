@@ -117,22 +117,13 @@ export async function generateWeatherTalk(ui = null) {
 }
 
 
-export async function replyToLiveComment(
-    comment,
-    ui = null
-) {
-    const username = String(
-        comment?.username || "viewer"
-    ).trim();
+export async function replyToLiveComment(comment, ui = null) {
+    const username = String(comment?.username || "viewer").trim();
 
-    const message = String(
-        comment?.text || ""
-    ).trim();
+    const message = String(comment?.text || "").trim();
 
     if (!message) {
-        throw new Error(
-            "返信対象のコメント本文が空です"
-        );
+        throw new Error("返信対象のコメント本文が空です");
     }
 
     try {
@@ -181,4 +172,29 @@ export async function sendUserComment(
         text: message,
         time: "now"
     });
+}
+
+export async function useScriptDirectly(script, emotion) {
+    if (!script || !emotion) {
+        throw new Error("scriptとemotionがセットされていません");
+    }
+
+    try {
+        const data = await fetchJSON("/api/use-script-directly/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                script,
+                emotion
+            })
+        });
+
+        return await handleAvatarResult(data);
+
+    } catch (error) {
+        console.error("ManualScript作成エラー:", error);
+        throw error;
+    }
 }

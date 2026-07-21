@@ -18,7 +18,8 @@ import {
     generateSelfIntroduction,
     generateNewsTalk,
     generateWeatherTalk,
-    replyToLiveComment
+    replyToLiveComment,
+    useScriptDirectly
 } from "../core/avatar_actions.js";
 
 import {
@@ -68,6 +69,7 @@ import {
 
 
 const EVENT_PRIORITY = Object.freeze({
+    USE_SCRIPT_DIRECTLY:100,
     SELF_INTRODUCTION: 100,
     LIVE_COMMENT: 80,
     IDLE_TALK: 10
@@ -182,6 +184,11 @@ function bindLiveEvents() {
     ui.clearLogBtn.addEventListener(
         "click",
         () => clearSystemLog(ui)
+    );
+
+    ui.speakManualScriptBtn.addEventListener(
+        "click",
+        enqueueSpeakDirect
     );
 }
 
@@ -472,6 +479,45 @@ function enqueueSelfIntroduction() {
     );
 }
 
+function enqueueSpeakDirect() {
+    const script = ui.manualScript.value.trim();
+    const emotion = ui.manualEmotion.value;
+
+    if (!script) {
+        writeSystemLog(ui, "発話用スクリプトを入力してください。", "error");
+        return;
+    }
+
+    cancelIdleTalkTimer();
+
+    try {
+        enqueueEvent("use_script_directly", EVENT_PRIORITY.USE_SCRIPT_DIRECTLY, () => runUseScriptDirectly(script, emotion));
+        writeSystemLog(ui, "管理者スクリプトをイベントキューへ追加しました。");
+
+    } catch (error) {
+        console.error("管理者スクリプトのキュー追加エラー:", error);
+        writeSystemLog(ui, `キュー追加エラー: ${error?.message || "不明なエラー"}`, "error");
+    }
+}
+
+async function runUseScriptDirectly(script, emotion) {
+    writeSystemLog(ui, "管理者作成のスクリプトを使用します。");
+
+    try {
+        await useScriptDirectly(script, emotion);
+
+        if (ui.manualScript.value.trim() === script) {
+            ui.manualScript.value = "";
+        }
+
+        writeSystemLog(ui, "管理者作成スクリプトの発話が完了しました。");
+
+    } catch (error) {
+        console.error("管理者実行スクリプトエラー:", error);
+        writeSystemLog(ui, `管理者スクリプトの発話に失敗しました: ${error?.message || "不明なエラー"}`, "error");
+        throw error;
+    }
+}
 
 async function runSelfIntroduction() {
     showIntroductionProcessing(ui);

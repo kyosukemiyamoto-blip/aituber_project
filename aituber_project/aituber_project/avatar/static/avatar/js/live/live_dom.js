@@ -66,6 +66,15 @@ export function getLiveElements() {
             getRequiredElement("systemLog"),
 
         clearLogBtn:
-            getRequiredElement("clearLogBtn")
+            getRequiredElement("clearLogBtn"),
+
+        manualScript:
+            getRequiredElement("manualScriptInput"),
+
+        manualEmotion:
+            getRequiredElement("manualEmotionSelect"),
+
+        speakManualScriptBtn:
+            getRequiredElement("speakManualScriptBtn"),
     };
 }
