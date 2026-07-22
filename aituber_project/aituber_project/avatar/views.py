@@ -12,8 +12,11 @@ from .core.repositories.comment_store import get_latest_comment
 from .core.utils.api_errors import handle_api_errors
 from .core.utils.request_utils import parse_post_json
 
-from .core.services.voice_service import delete_voice_file
+from .core.services.voice_service import delete_voice_file, generate_voice_reply
 from .core.services.comment_service import create_generated_comment
+
+from .core.integrations.openai_utils import generate_script_with_instruction
+from .core.soul.input_builder import build_script_with_instruction_input
 
 from .core.services.talk_service import (
     create_self_introduction_reply,
@@ -28,6 +31,8 @@ from .core.services.user_comment_service import (
 from .core.services.comment_reply_service import (
     create_comment_reply,
 )
+
+
 
 from .core.services.voice_service import build_voice_reply
 
@@ -147,8 +152,33 @@ def use_script_directly(request):
         "reply": reply_data
         })
     
-    
-    
+
+@csrf_exempt
+@handle_api_errors
+def script_with_instruction(request):
+    data, error_response = parse_post_json(request)
+
+    if error_response:
+        return error_response
+
+    instruction = str(data.get("instruction") or "").strip()
+
+    if not instruction:
+        return JsonResponse(
+            {"error": "instructionがセットされていません"},
+            status=400,
+        )
+
+    reply_data = generate_voice_reply(
+        lambda: instruction,
+        build_script_with_instruction_input,
+        generate_script_with_instruction,
+    )
+
+    return JsonResponse({
+        "reply": reply_data,
+    })
+
 
 
 @csrf_exempt

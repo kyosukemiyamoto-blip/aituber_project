@@ -19,7 +19,8 @@ import {
     generateNewsTalk,
     generateWeatherTalk,
     replyToLiveComment,
-    useScriptDirectly
+    useScriptDirectly,
+    scriptWithInstruction
 } from "../core/avatar_actions.js";
 
 import {
@@ -33,7 +34,8 @@ import {
 } from "./live_state.js";
 
 import {
-    getLiveElements
+    getLiveElements,
+    createInstruction
 } from "./live_dom.js";
 
 import {
@@ -69,6 +71,7 @@ import {
 
 
 const EVENT_PRIORITY = Object.freeze({
+    SCRIPT_WITH_INSTRUCTION:100,
     USE_SCRIPT_DIRECTLY:100,
     SELF_INTRODUCTION: 100,
     LIVE_COMMENT: 80,
@@ -189,6 +192,11 @@ function bindLiveEvents() {
     ui.speakManualScriptBtn.addEventListener(
         "click",
         enqueueSpeakDirect
+    );
+
+    ui.applyInstructionBtn.addEventListener(
+        "click",
+        enqueueScriptWithInstruction
     );
 }
 
@@ -497,6 +505,41 @@ function enqueueSpeakDirect() {
     } catch (error) {
         console.error("管理者スクリプトのキュー追加エラー:", error);
         writeSystemLog(ui, `キュー追加エラー: ${error?.message || "不明なエラー"}`, "error");
+    }
+}
+
+
+function enqueueScriptWithInstruction(){
+    const admin_instruction = ui.aiInstructionInput.value.trim();
+
+    if(!admin_instruction){
+        writeSystemLog(ui, "使用するinstructionを入力してください。", "error");
+        return;
+    }
+
+    const instruction = createInstruction(admin_instruction);
+
+    cancelIdleTalkTimer();
+
+    try {
+        enqueueEvent("script_with_instruction", EVENT_PRIORITY.SCRIPT_WITH_INSTRUCTION, () => runScriptWithInstruction(instruction));
+        writeSystemLog(ui, "管理者作成instructionをイベントキューへ追加しました。");
+    } catch (error) {
+        console.error("管理者作成instructionのキュー追加エラー:", error);
+        writeSystemLog(ui, `キュー追加エラー: ${error?.message || "不明なエラー"}`, "error");
+    }
+}
+
+async function runScriptWithInstruction(instruction){
+    writeSystemLog(ui, "管理者作成のinstructionを使用します。");
+
+    try {
+        await scriptWithInstruction(instruction);
+        writeSystemLog(ui, "管理者作成のinstruction使用が完了しました。");
+    } catch (error){
+        console.error("管理者作成instructionが使用できませんでした", error);
+        writeSystemLog(ui, `管理者作成instructionの使用に失敗しました: ${error?.message || "不明なエラー"}`, "error");
+        throw error;
     }
 }
 

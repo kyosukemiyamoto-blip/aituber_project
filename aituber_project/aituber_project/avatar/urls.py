@@ -12,6 +12,7 @@ urlpatterns = [
     path("api/user-comment/", views.user_comment_api, name="user_comment_api"),
     path("api/delete-voice/", views.delete_voice_api, name="delete_voice_api"),
     path("api/use-script-directly/", views.use_script_directly, name="use_script_directly"),
+    path("api/script-with-instruction/",views.script_with_instruction, name="script_with_instruction"),
 
     path("api/youtube-live-comments/", views.youtube_live_comments_api, name="youtube_live_comments_api"),
     path("api/youtube-live-info/",views.youtube_live_info_api,name="youtube_live_info_api"),

@@ -850,3 +850,277 @@ input[type="checkbox"] {
         min-height: 180px;
     }
 }
+/* =========================================================
+   Tabbed live layout
+========================================================= */
+.live_app_layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr) clamp(105px, 15vh, 142px);
+    grid-template-areas:
+        "header"
+        "tabs"
+        "content"
+        "log";
+}
+
+.tab_navigation {
+    grid-area: tabs;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    width: fit-content;
+    padding: 4px;
+    border: 1px solid var(--panel-border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    backdrop-filter: blur(18px) saturate(145%);
+    -webkit-backdrop-filter: blur(18px) saturate(145%);
+}
+
+.tab_button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 96px;
+    min-height: 34px;
+    padding: 7px 18px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1;
+    white-space: nowrap;
+    transition: background-color var(--transition), color var(--transition), box-shadow var(--transition), transform var(--transition);
+}
+
+.tab_button:hover:not(.active) {
+    background: rgba(0, 0, 0, 0.04);
+    color: var(--text-primary);
+}
+
+.tab_button.active {
+    background: #fff;
+    color: var(--accent);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+}
+
+.tab_button:active {
+    transform: scale(0.98);
+}
+
+.tab_button:focus-visible {
+    position: relative;
+    z-index: 1;
+}
+
+.tab_viewport {
+    grid-area: content;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.tab_panel {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+}
+
+.tab_panel[hidden] {
+    display: none;
+}
+
+.monitor_tab {
+    display: grid;
+    grid-template-columns: minmax(245px, 0.82fr) minmax(285px, 0.95fr) minmax(360px, 1.35fr);
+    gap: var(--gap);
+}
+
+.monitor_status_column,
+.monitor_process_column {
+    display: grid;
+    min-width: 0;
+    min-height: 0;
+    gap: var(--gap);
+}
+
+.monitor_status_column {
+    grid-template-rows: minmax(0, 0.78fr) minmax(0, 1.22fr);
+}
+
+.monitor_process_column {
+    grid-template-rows: minmax(0, 1.08fr) minmax(0, 0.92fr);
+}
+
+.monitor_comments_panel {
+    min-width: 0;
+    min-height: 0;
+}
+
+.control_tab {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--gap);
+}
+
+.control_tab .manual_script_panel,
+.control_tab .ai_instruction_panel {
+    min-height: 0;
+}
+
+.control_tab .control_textarea_group {
+    flex: 1 1 auto;
+}
+
+.control_tab .control_textarea_group textarea {
+    height: 100%;
+    min-height: 150px;
+    resize: none;
+}
+
+.control_tab .manual_script_panel > .primary_button {
+    margin-top: 4px;
+}
+
+.control_tab .active_instruction_box {
+    flex: 0 1 34%;
+    min-height: 74px;
+}
+
+.settings_tab {
+    display: grid;
+    place-items: start center;
+    overflow: auto;
+    padding: 1px;
+}
+
+.settings_automation_panel {
+    width: min(100%, 680px);
+    min-height: min(100%, 400px);
+}
+
+.settings_group {
+    padding: 14px;
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-medium);
+    background: rgba(245, 245, 247, 0.62);
+}
+
+.settings_group + .settings_group {
+    margin-top: 12px;
+}
+
+.settings_group h3 {
+    margin: 0 0 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.settings_group .checkbox_row {
+    padding: 8px 2px;
+    font-size: 11px;
+}
+
+.settings_group .input_group {
+    margin-bottom: 0;
+}
+
+/* The former three-column wrappers are no longer used. */
+.left_column,
+.center_column,
+.right_column {
+    grid-area: auto;
+}
+
+@media (max-height: 780px) {
+    .live_app_layout {
+        grid-template-rows: auto auto minmax(0, 1fr) 102px;
+    }
+
+    .tab_navigation {
+        padding: 3px;
+    }
+
+    .tab_button {
+        min-height: 30px;
+        padding-block: 6px;
+    }
+
+    .control_tab .control_textarea_group textarea {
+        height: 100%;
+        min-height: 90px;
+    }
+}
+
+@media (max-width: 1100px) {
+    body {
+        overflow: auto;
+    }
+
+    .live_app_layout {
+        display: flex;
+        height: auto;
+        min-height: 100dvh;
+        flex-direction: column;
+        overflow: visible;
+    }
+
+    .tab_navigation {
+        width: 100%;
+    }
+
+    .tab_button {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    .tab_viewport {
+        overflow: visible;
+    }
+
+    .tab_panel {
+        height: auto;
+    }
+
+    .monitor_tab,
+    .control_tab {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .monitor_status_column,
+    .monitor_process_column {
+        grid-template-rows: none;
+    }
+
+    .panel,
+    .settings_automation_panel {
+        min-height: 220px;
+    }
+
+    .system_log_panel {
+        min-height: 180px;
+    }
+}
+
+@media (max-width: 620px) {
+    .live_status_area {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .live_status_badge {
+        grid-column: 1 / -1;
+        max-width: none;
+    }
+
+    .tab_button {
+        padding-inline: 8px;
+        font-size: 11px;
+    }
+}

@@ -5,7 +5,7 @@ from openai import OpenAI
 from .openai_utils import safe_json_parse
 
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-API_MODEL = "gpt-4.1-mini"
+API_MODEL = "gpt-5.5"
 
 def generate_LongTermMemory(instruction:str,prompt_input:str):
     response = client.responses.create(model=API_MODEL, instructions=instruction, input=prompt_input)

@@ -198,3 +198,27 @@ export async function useScriptDirectly(script, emotion) {
         throw error;
     }
 }
+
+export async function scriptWithInstruction(instruction){
+    if(!instruction){
+        throw new Error("instructionがセットされていません");
+    }
+
+    try{
+        const data = await fetchJSON("/api/script-with-instruction/",{
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                instruction
+            })
+        });
+
+        return await handleAvatarResult(data);
+
+    } catch (error){
+        console.error("scriptWithInstructionエラー", error);
+        throw error;
+    }
+}

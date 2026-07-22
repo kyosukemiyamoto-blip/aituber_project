@@ -136,3 +136,25 @@ def generate_weather_talk(instruction:str, prompt_input:str):
     }
 
 #------------------------------------------------------------------------------------------------------------------------------------
+def generate_script_with_instruction(instruction:str, prompt_input:str):
+    response = client.responses.create(model=API_MODEL, instructions=instruction, input=prompt_input)
+
+    data = safe_json_parse(
+        response.output_text.strip(),
+        {
+            "script": "",
+            "emotion": "normal"
+        }
+    )
+    emotion = data.get(
+        "emotion",
+        "normal"
+    )
+
+    if emotion not in ALLOWED_EMOTIONS:
+        emotion = "normal"
+
+    return {
+        "script": data.get("script", ""),
+        "emotion": emotion
+    }

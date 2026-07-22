@@ -1,8 +1,7 @@
 from ..integrations.openai_utils import (
     generate_self_introduction,
     generate_news_talk,
-    generate_weather_talk,
-)
+    generate_weather_talk,)
 
 from ..soul.instruction_builder import (
     generate_self_introduction_instruction,
@@ -13,10 +12,7 @@ from ..soul.instruction_builder import (
 from ..soul.input_builder import (
     build_generate_self_introduction_input,
     build_generate_news_talk_input,
-    build_generate_weather_talk_input,
-)
-
-from .voice_service import generate_voice_reply
+    build_generate_weather_talk_input,)
 
 from .voice_service import generate_voice_reply
 

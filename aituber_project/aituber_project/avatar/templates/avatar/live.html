@@ -1,496 +1,570 @@
 {% load static %}
 
 <!DOCTYPE html>
-
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>AITuber Live Control</title>
+    <title>AITuber Live Control</title>
 
-<link rel="icon" href="{% static 'avatar/images/【あ】.png' %}">
-<link rel="stylesheet" href="{% static 'avatar/css/live.css' %}">
+    <link rel="icon" href="{% static 'avatar/images/【あ】.png' %}">
+    <link rel="stylesheet" href="{% static 'avatar/css/live.css' %}">
 
-<script type="module" src="{% static 'avatar/js/live.js' %}"></script>
-
+    <script type="module" src="{% static 'avatar/js/live.js' %}"></script>
+    <script type="module" src="{% static 'avatar/js/live_tabs.js' %}"></script>
 </head>
 
 <body>
     <main class="live_app_layout">
 
-    <!-- ==============================
-         Header
-    =============================== -->
-    <header class="live_app_header">
-        <div class="header_title_area">
-            <h1>AITuber Live Control</h1>
-            <p class="page_description">
-                YouTube Liveコメント取得・AI返信管理
-            </p>
-        </div>
-
-        <div class="live_status_area">
-            <span
-                id="liveStatusBadge"
-                class="live_status_badge disconnected"
-                role="status"
-                aria-live="polite"
-            >
-                接続準備中
-            </span>
-
-            <button
-                type="button"
-                id="startBroadcastBtn"
-                class="primary_button"
-                disabled
-            >
-                配信開始
-            </button>
-
-            <button
-                type="button"
-                id="stopLiveBtn"
-                class="danger_button"
-            >
-                自動処理停止
-            </button>
-        </div>
-    </header>
-
-
-    <!-- ==============================
-         Left Column
-    =============================== -->
-    <section class="left_column">
-
-        <!-- Live Information -->
-        <section class="panel live_info_panel">
-            <div class="panel_header">
-                <div>
-                    <h2>Live Stream</h2>
-                    <p class="panel_description">
-                        接続中のYouTube Live情報
-                    </p>
-                </div>
-            </div>
-
-            <div class="live_info_body">
-                <div class="status_list">
-                    <div class="status_row">
-                        <span class="status_label">
-                            動画タイトル
-                        </span>
-
-                        <span
-                            id="liveTitleText"
-                            class="status_value"
-                        >
-                            -
-                        </span>
-                    </div>
-
-                    <div class="status_row">
-                        <span class="status_label">
-                            動画ID
-                        </span>
-
-                        <span
-                            id="videoIdText"
-                            class="status_value"
-                        >
-                            -
-                        </span>
-                    </div>
-
-                    <div class="status_row">
-                        <span class="status_label">
-                            コメント取得状態
-                        </span>
-
-                        <span
-                            id="commentPollingStatus"
-                            class="status_value"
-                            role="status"
-                            aria-live="polite"
-                        >
-                            停止中
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-
-        <!-- Current Comment -->
-        <section class="panel current_comment_panel">
-            <div class="panel_header">
-                <div>
-                    <h2>Current Comment</h2>
-                    <p class="panel_description">
-                        現在返信処理中のコメント
-                    </p>
-                </div>
-            </div>
-
-            <article
-                id="currentComment"
-                class="current_comment_card"
-                aria-live="polite"
-            >
-                <div class="comment_meta">
-                    <span
-                        id="currentCommentUsername"
-                        class="comment_username"
-                    >
-                        -
-                    </span>
-
-                    <time
-                        id="currentCommentTime"
-                        class="comment_time"
-                    >
-                        -
-                    </time>
-                </div>
-
-                <p
-                    id="currentCommentText"
-                    class="comment_text"
-                >
-                    現在処理中のコメントはありません。
+        <!-- ==============================
+             Header
+        =============================== -->
+        <header class="live_app_header">
+            <div class="header_title_area">
+                <h1>AITuber Live Control</h1>
+                <p class="page_description">
+                    YouTube Liveコメント取得・AI返信管理
                 </p>
-            </article>
-        </section>
-
-
-        <!-- Current Reply -->
-        <section class="panel current_reply_panel">
-            <div class="panel_header">
-                <div>
-                    <h2>Current Reply</h2>
-                    <p class="panel_description">
-                        AIが生成・再生している返信内容
-                    </p>
-                </div>
             </div>
 
-            <div class="reply_status">
-                <span class="status_label">
-                    処理状態
-                </span>
-
+            <div class="live_status_area">
                 <span
-                    id="replyProcessStatus"
-                    class="status_value"
+                    id="liveStatusBadge"
+                    class="live_status_badge disconnected"
                     role="status"
                     aria-live="polite"
                 >
-                    待機中
+                    接続準備中
                 </span>
-            </div>
-
-            <div
-                id="currentReplyText"
-                class="current_reply_text"
-                aria-live="polite"
-            >
-                返信はまだ生成されていません。
-            </div>
-
-            <div class="reply_meta">
-                <span>
-                    Emotion:
-                    <strong id="currentReplyEmotion">-</strong>
-                </span>
-
-                <span>
-                    Audio:
-                    <strong id="currentAudioStatus">-</strong>
-                </span>
-            </div>
-        </section>
-
-    </section>
-
-
-    <!-- ==============================
-         Center Column
-    =============================== -->
-    <section class="center_column">
-
-        <!-- Event Queue -->
-        <section class="panel queue_panel">
-            <div class="panel_header">
-                <div>
-                    <h2>Event Queue</h2>
-                    <p class="panel_description">
-                        実行中・実行待ちの処理一覧
-                    </p>
-                </div>
-
-                <span
-                    id="queueCount"
-                    class="queue_count"
-                    aria-label="待機中イベント数"
-                >
-                    0
-                </span>
-            </div>
-
-            <div
-                id="eventQueue"
-                class="event_queue"
-                aria-live="polite"
-            >
-                <p class="empty_message">
-                    待機中のイベントはありません。
-                </p>
-            </div>
-        </section>
-
-
-        <!-- Live Comments -->
-        <section class="panel comment_history_panel">
-            <div class="panel_header">
-                <div>
-                    <h2>Live Comments</h2>
-                    <p class="panel_description">
-                        取得したYouTube Liveコメント
-                    </p>
-                </div>
 
                 <button
                     type="button"
-                    id="clearCommentsBtn"
-                    class="secondary_button"
-                >
-                    履歴を削除
-                </button>
-            </div>
-
-            <div
-                id="liveCommentList"
-                class="live_comment_list"
-                aria-live="polite"
-            >
-                <p class="empty_message">
-                    コメントはまだ取得されていません。
-                </p>
-            </div>
-        </section>
-
-    </section>
-
-
-    <!-- ==============================
-         Right Column
-    =============================== -->
-    <section class="right_column">
-
-        <!-- Manual Script -->
-        <section class="panel manual_script_panel">
-            <div class="panel_header">
-                <div>
-                    <h2>Manual Script</h2>
-                    <p class="panel_description">
-                        管理者が入力した文章を直接発話させます
-                    </p>
-                </div>
-            </div>
-
-            <div class="input_group">
-                <label for="manualScriptInput">
-                    発話スクリプト
-                </label>
-
-                <textarea
-                    id="manualScriptInput"
-                    rows="7"
-                    placeholder="AITuberに喋らせたい文章を入力してください"
-                ></textarea>
-            </div>
-
-            <div class="input_group">
-                <label for="manualEmotionSelect">
-                    感情
-                </label>
-
-                <select id="manualEmotionSelect">
-                    <option value="normal">normal</option>
-                    <option value="happy">happy</option>
-                    <option value="surprised">surprised</option>
-                    <option value="angry">angry</option>
-                    <option value="sad">sad</option>
-                </select>
-            </div>
-
-            <button
-                type="button"
-                id="speakManualScriptBtn"
-                class="primary_button"
-            >
-                スクリプトを発話
-            </button>
-        </section>
-
-
-        <!-- AI Instructions -->
-        <section class="panel ai_instruction_panel">
-            <div class="panel_header">
-                <div>
-                    <h2>AI Instructions</h2>
-                    <p class="panel_description">
-                        配信中のAIへ追加指示を与えます
-                    </p>
-                </div>
-            </div>
-
-            <div class="input_group">
-                <label for="aiInstructionInput">
-                    追加指示
-                </label>
-
-                <textarea
-                    id="aiInstructionInput"
-                    rows="7"
-                    placeholder="例：コメントには短めに返答してください"
-                ></textarea>
-            </div>
-
-            <div class="button_row">
-                <button
-                    type="button"
-                    id="applyInstructionBtn"
+                    id="startBroadcastBtn"
                     class="primary_button"
+                    disabled
                 >
-                    指示を適用
+                    配信開始
                 </button>
 
                 <button
                     type="button"
-                    id="clearInstructionBtn"
-                    class="secondary_button"
+                    id="stopLiveBtn"
+                    class="danger_button"
                 >
-                    指示を解除
+                    自動処理停止
                 </button>
             </div>
-
-            <div class="active_instruction_box">
-                <h3>現在適用中の指示</h3>
-
-                <p id="activeInstructionText">
-                    追加指示はありません。
-                </p>
-            </div>
-        </section>
+        </header>
 
 
-        <!-- Automation Settings -->
-        <section class="panel automation_panel">
-            <div class="panel_header">
-                <div>
-                    <h2>Automation</h2>
-                    <p class="panel_description">
-                        自動返信処理の設定
-                    </p>
-                </div>
-            </div>
-
-            <label class="checkbox_row">
-                <input
-                    type="checkbox"
-                    id="autoReplyEnabled"
-                    checked
-                >
-
-                <span>
-                    コメントへ自動返信する
-                </span>
-            </label>
-
-            <label class="checkbox_row">
-                <input
-                    type="checkbox"
-                    id="runIntroductionOnStart"
-                    checked
-                >
-
-                <span>
-                    開始時に自己紹介を実行する
-                </span>
-            </label>
-
-            <label class="checkbox_row">
-                <input
-                    type="checkbox"
-                    id="ignoreProcessedComments"
-                    checked
-                >
-
-                <span>
-                    処理済みコメントを除外する
-                </span>
-            </label>
-
-            <div class="input_group">
-                <label for="replyIntervalInput">
-                    返信後の待機時間
-                </label>
-
-                <div class="number_input_row">
-                    <input
-                        type="number"
-                        id="replyIntervalInput"
-                        value="2"
-                        min="0"
-                        step="1"
-                    >
-
-                    <span>秒</span>
-                </div>
-            </div>
-        </section>
-
-    </section>
-
-
-    <!-- ==============================
-         System Log
-    =============================== -->
-    <section class="panel system_log_panel">
-        <div class="panel_header">
-            <div>
-                <h2>System Log</h2>
-                <p class="panel_description">
-                    自動処理・API通信・エラー履歴
-                </p>
-            </div>
+        <!-- ==============================
+             Tab Navigation
+        =============================== -->
+        <nav
+            class="tab_navigation"
+            role="tablist"
+            aria-label="ライブ管理画面"
+        >
+            <button
+                type="button"
+                id="monitorTabButton"
+                class="tab_button active"
+                role="tab"
+                aria-selected="true"
+                aria-controls="monitorTab"
+                data-tab-target="monitorTab"
+                tabindex="0"
+            >
+                モニター
+            </button>
 
             <button
                 type="button"
-                id="clearLogBtn"
-                class="secondary_button"
+                id="controlTabButton"
+                class="tab_button"
+                role="tab"
+                aria-selected="false"
+                aria-controls="controlTab"
+                data-tab-target="controlTab"
+                tabindex="-1"
             >
-                ログ削除
+                操作
             </button>
-        </div>
 
-        <div
-            id="systemLog"
-            class="system_log"
-            role="log"
-            aria-live="polite"
-            aria-relevant="additions"
-        >
-            <p class="log_item">
-                システム待機中
-            </p>
-        </div>
-    </section>
+            <button
+                type="button"
+                id="settingsTabButton"
+                class="tab_button"
+                role="tab"
+                aria-selected="false"
+                aria-controls="settingsTab"
+                data-tab-target="settingsTab"
+                tabindex="-1"
+            >
+                設定
+            </button>
+        </nav>
 
-</main>
 
+        <!-- ==============================
+             Tab Viewport
+        =============================== -->
+        <section class="tab_viewport">
+
+            <!-- Monitor Tab -->
+            <section
+                id="monitorTab"
+                class="tab_panel monitor_tab active"
+                role="tabpanel"
+                aria-labelledby="monitorTabButton"
+            >
+                <div class="monitor_status_column">
+
+                    <!-- Live Information -->
+                    <section class="panel live_info_panel">
+                        <div class="panel_header">
+                            <div>
+                                <h2>Live Stream</h2>
+                                <p class="panel_description">
+                                    接続中のYouTube Live情報
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="live_info_body">
+                            <div class="status_list">
+                                <div class="status_row">
+                                    <span class="status_label">
+                                        動画タイトル
+                                    </span>
+
+                                    <span
+                                        id="liveTitleText"
+                                        class="status_value"
+                                    >
+                                        -
+                                    </span>
+                                </div>
+
+                                <div class="status_row">
+                                    <span class="status_label">
+                                        動画ID
+                                    </span>
+
+                                    <span
+                                        id="videoIdText"
+                                        class="status_value"
+                                    >
+                                        -
+                                    </span>
+                                </div>
+
+                                <div class="status_row">
+                                    <span class="status_label">
+                                        コメント取得状態
+                                    </span>
+
+                                    <span
+                                        id="commentPollingStatus"
+                                        class="status_value"
+                                        role="status"
+                                        aria-live="polite"
+                                    >
+                                        停止中
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+
+                    <!-- Current Comment -->
+                    <section class="panel current_comment_panel">
+                        <div class="panel_header">
+                            <div>
+                                <h2>Current Comment</h2>
+                                <p class="panel_description">
+                                    現在返信処理中のコメント
+                                </p>
+                            </div>
+                        </div>
+
+                        <article
+                            id="currentComment"
+                            class="current_comment_card"
+                            aria-live="polite"
+                        >
+                            <div class="comment_meta">
+                                <span
+                                    id="currentCommentUsername"
+                                    class="comment_username"
+                                >
+                                    -
+                                </span>
+
+                                <time
+                                    id="currentCommentTime"
+                                    class="comment_time"
+                                >
+                                    -
+                                </time>
+                            </div>
+
+                            <p
+                                id="currentCommentText"
+                                class="comment_text"
+                            >
+                                現在処理中のコメントはありません。
+                            </p>
+                        </article>
+                    </section>
+
+                </div>
+
+
+                <div class="monitor_process_column">
+
+                    <!-- Current Reply -->
+                    <section class="panel current_reply_panel">
+                        <div class="panel_header">
+                            <div>
+                                <h2>Current Reply</h2>
+                                <p class="panel_description">
+                                    AIが生成・再生している返信内容
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="reply_status">
+                            <span class="status_label">
+                                処理状態
+                            </span>
+
+                            <span
+                                id="replyProcessStatus"
+                                class="status_value"
+                                role="status"
+                                aria-live="polite"
+                            >
+                                待機中
+                            </span>
+                        </div>
+
+                        <div
+                            id="currentReplyText"
+                            class="current_reply_text"
+                            aria-live="polite"
+                        >
+                            返信はまだ生成されていません。
+                        </div>
+
+                        <div class="reply_meta">
+                            <span>
+                                Emotion:
+                                <strong id="currentReplyEmotion">-</strong>
+                            </span>
+
+                            <span>
+                                Audio:
+                                <strong id="currentAudioStatus">-</strong>
+                            </span>
+                        </div>
+                    </section>
+
+
+                    <!-- Event Queue -->
+                    <section class="panel queue_panel">
+                        <div class="panel_header">
+                            <div>
+                                <h2>Event Queue</h2>
+                                <p class="panel_description">
+                                    実行中・実行待ちの処理一覧
+                                </p>
+                            </div>
+
+                            <span
+                                id="queueCount"
+                                class="queue_count"
+                                aria-label="待機中イベント数"
+                            >
+                                0
+                            </span>
+                        </div>
+
+                        <div
+                            id="eventQueue"
+                            class="event_queue"
+                            aria-live="polite"
+                        >
+                            <p class="empty_message">
+                                待機中のイベントはありません。
+                            </p>
+                        </div>
+                    </section>
+
+                </div>
+
+
+                <!-- Live Comments -->
+                <section class="panel comment_history_panel monitor_comments_panel">
+                    <div class="panel_header">
+                        <div>
+                            <h2>Live Comments</h2>
+                            <p class="panel_description">
+                                取得したYouTube Liveコメント
+                            </p>
+                        </div>
+
+                        <button
+                            type="button"
+                            id="clearCommentsBtn"
+                            class="secondary_button"
+                        >
+                            履歴を削除
+                        </button>
+                    </div>
+
+                    <div
+                        id="liveCommentList"
+                        class="live_comment_list"
+                        aria-live="polite"
+                    >
+                        <p class="empty_message">
+                            コメントはまだ取得されていません。
+                        </p>
+                    </div>
+                </section>
+            </section>
+
+
+            <!-- Control Tab -->
+            <section
+                id="controlTab"
+                class="tab_panel control_tab"
+                role="tabpanel"
+                aria-labelledby="controlTabButton"
+                hidden
+            >
+                <!-- Manual Script -->
+                <section class="panel manual_script_panel">
+                    <div class="panel_header">
+                        <div>
+                            <h2>Manual Script</h2>
+                            <p class="panel_description">
+                                管理者が入力した文章を直接発話させます
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="input_group control_textarea_group">
+                        <label for="manualScriptInput">
+                            発話スクリプト
+                        </label>
+
+                        <textarea
+                            id="manualScriptInput"
+                            rows="12"
+                            placeholder="AITuberに喋らせたい文章を入力してください"
+                        ></textarea>
+                    </div>
+
+                    <div class="input_group">
+                        <label for="manualEmotionSelect">
+                            感情
+                        </label>
+
+                        <select id="manualEmotionSelect">
+                            <option value="normal">normal</option>
+                            <option value="happy">happy</option>
+                            <option value="surprised">surprised</option>
+                            <option value="angry">angry</option>
+                            <option value="sad">sad</option>
+                        </select>
+                    </div>
+
+                    <button
+                        type="button"
+                        id="speakManualScriptBtn"
+                        class="primary_button"
+                    >
+                        スクリプトを発話
+                    </button>
+                </section>
+
+
+                <!-- AI Instructions -->
+                <section class="panel ai_instruction_panel">
+                    <div class="panel_header">
+                        <div>
+                            <h2>AI Instructions</h2>
+                            <p class="panel_description">
+                                配信中のAIへ追加指示を与えます
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="input_group control_textarea_group">
+                        <label for="aiInstructionInput">
+                            追加指示
+                        </label>
+
+                        <textarea
+                            id="aiInstructionInput"
+                            rows="12"
+                            placeholder="例：コメントには短めに返答してください"
+                        ></textarea>
+                    </div>
+
+                    <div class="button_row">
+                        <button
+                            type="button"
+                            id="applyInstructionBtn"
+                            class="primary_button"
+                        >
+                            指示を適用
+                        </button>
+
+                        <button
+                            type="button"
+                            id="clearInstructionBtn"
+                            class="secondary_button"
+                        >
+                            指示を解除
+                        </button>
+                    </div>
+
+                    <div class="active_instruction_box">
+                        <h3>現在適用中の指示</h3>
+
+                        <p id="activeInstructionText">
+                            追加指示はありません。
+                        </p>
+                    </div>
+                </section>
+            </section>
+
+
+            <!-- Settings Tab -->
+            <section
+                id="settingsTab"
+                class="tab_panel settings_tab"
+                role="tabpanel"
+                aria-labelledby="settingsTabButton"
+                hidden
+            >
+                <!-- Automation Settings -->
+                <section class="panel automation_panel settings_automation_panel">
+                    <div class="panel_header">
+                        <div>
+                            <h2>Automation</h2>
+                            <p class="panel_description">
+                                自動返信処理の設定
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="settings_group">
+                        <h3>コメント処理</h3>
+
+                        <label class="checkbox_row">
+                            <input
+                                type="checkbox"
+                                id="autoReplyEnabled"
+                                checked
+                            >
+
+                            <span>
+                                コメントへ自動返信する
+                            </span>
+                        </label>
+
+                        <label class="checkbox_row">
+                            <input
+                                type="checkbox"
+                                id="runIntroductionOnStart"
+                                checked
+                            >
+
+                            <span>
+                                開始時に自己紹介を実行する
+                            </span>
+                        </label>
+
+                        <label class="checkbox_row">
+                            <input
+                                type="checkbox"
+                                id="ignoreProcessedComments"
+                                checked
+                            >
+
+                            <span>
+                                処理済みコメントを除外する
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="settings_group">
+                        <h3>返信タイミング</h3>
+
+                        <div class="input_group">
+                            <label for="replyIntervalInput">
+                                返信後の待機時間
+                            </label>
+
+                            <div class="number_input_row">
+                                <input
+                                    type="number"
+                                    id="replyIntervalInput"
+                                    value="2"
+                                    min="0"
+                                    step="1"
+                                >
+
+                                <span>秒</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </section>
+        </section>
+
+
+        <!-- ==============================
+             System Log
+        =============================== -->
+        <section class="panel system_log_panel">
+            <div class="panel_header">
+                <div>
+                    <h2>System Log</h2>
+                    <p class="panel_description">
+                        自動処理・API通信・エラー履歴
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    id="clearLogBtn"
+                    class="secondary_button"
+                >
+                    ログ削除
+                </button>
+            </div>
+
+            <div
+                id="systemLog"
+                class="system_log"
+                role="log"
+                aria-live="polite"
+                aria-relevant="additions"
+            >
+                <p class="log_item">
+                    システム待機中
+                </p>
+            </div>
+        </section>
+
+    </main>
 </body>
 </html>
